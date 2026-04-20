@@ -1,9 +1,12 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { CommentItem } from './CommentItem'
 import { ReactionBar } from './ReactionBar'
+import { StoryCard } from './StoryCard'
+import { shareAsStory } from '@/lib/shareStory'
 import type { Thread, Comment } from '@/types'
 import { ArrowLeft, Share2, MessageSquare, Lock, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from '@/lib/time'
@@ -25,6 +28,7 @@ export function ThreadDetail({ threadId }: Props) {
   const [ownerToken, setOwnerToken] = useState<string | null>(null)
   const [userUuid, setUserUuid] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const storyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const uuid = getOrCreateUserUUID()
@@ -208,12 +212,9 @@ export function ThreadDetail({ threadId }: Props) {
 
   const handleShare = async () => {
     const url = window.location.href
-    if (navigator.share) {
-      await navigator.share({ title: thread?.title, url })
-    } else {
-      await navigator.clipboard.writeText(url)
-      toast.success('Link disalin!')
-    }
+    if (!storyRef.current || !thread) return
+    const result = await shareAsStory(storyRef.current, url, thread.title)
+    if (result === 'copied') toast.success('Link disalin!')
   }
 
   if (loading) {
@@ -239,6 +240,17 @@ export function ThreadDetail({ threadId }: Props) {
   const subcategorySlug = (thread.subcategory as unknown as { slug: string })?.slug
 
   return (
+    <>
+    {/* Off-screen story card for image capture */}
+    {typeof window !== 'undefined' && createPortal(
+      <div style={{ position: 'fixed', left: '-9999px', top: '-9999px', zIndex: -1 }}>
+        <div ref={storyRef}>
+          <StoryCard thread={thread} />
+        </div>
+      </div>,
+      document.body
+    )}
+
     <div className="pb-32">
       {/* Back nav */}
       <div className="sticky top-12 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-800 px-4 py-2 flex items-center gap-3">
@@ -377,5 +389,6 @@ export function ThreadDetail({ threadId }: Props) {
         </div>
       )}
     </div>
+    </>
   )
 }
