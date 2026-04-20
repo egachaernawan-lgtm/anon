@@ -5,7 +5,26 @@
       "Read(//private/tmp/**)",
       "Bash(npx create-next-app@latest anon-app --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\" --no-git)",
       "Bash(npm install *)",
-      "Bash(npx shadcn@latest init --defaults)"
+      "Bash(npx shadcn@latest init --defaults)",
+      "Bash(npx shadcn@latest add badge card drawer input sheet toast textarea)",
+      "Bash(npx shadcn@latest add badge card drawer input sheet sonner textarea)",
+      "Bash(mkdir -p \"/Users/line/Anon/app/api/threads/[id]/react\")",
+      "Bash(mkdir -p \"/Users/line/Anon/app/api/threads/[id]/comments\")",
+      "Bash(mkdir -p \"/Users/line/Anon/app/api/comments/[id]/react\")",
+      "Bash(mkdir -p \"/Users/line/Anon/app/api/comments/[id]/highlight\")",
+      "Bash(mkdir -p \"/Users/line/Anon/app/[subcategory]\")",
+      "Bash(mkdir -p \"/Users/line/Anon/app/thread/[id]\")",
+      "Bash(npx tsc *)",
+      "Bash(node node_modules/typescript/lib/tsc.js --noEmit)",
+      "Bash(npm run *)",
+      "Bash(node node_modules/next/dist/bin/next build)",
+      "Bash(xargs sed *)",
+      "Bash(openssl rand *)",
+      "Bash(curl -s http://localhost:3000)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(kill 20679 31917)",
+      "Bash(git remote *)",
+      "Bash(git add *)"
     ]
   }
 }
