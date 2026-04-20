@@ -1,5 +1,16 @@
 import { toPng } from 'html-to-image'
 
+function copyToClipboardFallback(text: string) {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.cssText = 'position:fixed;left:-9999px;top:-9999px'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(textarea)
+}
+
 export async function shareAsStory(
   cardElement: HTMLElement,
   fallbackUrl: string,
@@ -12,30 +23,34 @@ export async function shareAsStory(
       skipAutoScale: true,
     })
 
-    // Convert data URL to File
     const res = await fetch(dataUrl)
     const blob = await res.blob()
     const file = new File([blob], 'anon-thread.png', { type: 'image/png' })
 
-    // Check if device supports file sharing (mobile only)
+    // Mobile: share image file (shows Instagram Stories in system sheet)
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title,
-      })
+      await navigator.share({ files: [file], title })
       return 'story'
     }
   } catch {
     // Fall through to URL sharing
   }
 
-  // Fallback: share URL
+  // Desktop: try Web Share API with URL
   if (navigator.share) {
-    await navigator.share({ title, url: fallbackUrl })
-    return 'share'
+    try {
+      await navigator.share({ title, url: fallbackUrl })
+      return 'share'
+    } catch {
+      // User cancelled or not supported — fall through
+    }
   }
 
-  // Last resort: copy to clipboard
-  await navigator.clipboard.writeText(fallbackUrl)
+  // Last resort: textarea-based copy (no permission needed)
+  try {
+    await navigator.clipboard.writeText(fallbackUrl)
+  } catch {
+    copyToClipboardFallback(fallbackUrl)
+  }
   return 'copied'
 }
