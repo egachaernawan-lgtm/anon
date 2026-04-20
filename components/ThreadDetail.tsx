@@ -171,6 +171,22 @@ export function ThreadDetail({ threadId }: Props) {
       return
     }
     if (data.warningMessage) toast.warning(data.warningMessage)
+
+    // Add comment to state immediately — don't wait for Realtime
+    const newComment = { ...data.comment, replies: [], user_reaction: null }
+    if (replyTo?.id) {
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === replyTo.id
+            ? { ...c, replies: [...(c.replies ?? []), newComment] }
+            : c
+        )
+      )
+    } else {
+      setComments((prev) => [...prev, newComment])
+    }
+    setThread((t) => t ? { ...t, comment_count: t.comment_count + 1 } : t)
+
     setCommentText('')
     setReplyTo(null)
     setPosting(false)
