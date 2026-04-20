@@ -23,14 +23,18 @@ export async function GET() {
     cachedThreads = data ?? []
   }
 
-  // For subcategories without cache, fetch the most active thread in last 24h
+  // For subcategories without cache:
+  // 1. Try most active thread in last 24h first
+  // 2. Fall back to most recent thread ever (so the homepage is never empty)
   const allSubcategoryIds = CATEGORIES.flatMap((c) => c.subcategories?.map((s) => s.id) ?? [])
   const uncachedIds = allSubcategoryIds.filter((id) => !cacheMap.has(id))
 
   const fallbackResults: Record<string, unknown>[] = []
   if (uncachedIds.length > 0) {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    const { data } = await supabase
+
+    // Step 1: most active in last 24h
+    const { data: recentData } = await supabase
       .from('threads')
       .select('*, subcategory:subcategories(id, name, slug, category:categories(name, slug, icon))')
       .in('subcategory_id', uncachedIds)
@@ -38,12 +42,30 @@ export async function GET() {
       .gte('created_at', oneDayAgo)
       .order('comment_count', { ascending: false })
 
-    // Pick top thread per subcategory
-    const seen = new Set<number>()
-    for (const thread of data ?? []) {
-      if (!seen.has(thread.subcategory_id)) {
-        seen.add(thread.subcategory_id)
+    const coveredIds = new Set<number>()
+    for (const thread of recentData ?? []) {
+      if (!coveredIds.has(thread.subcategory_id)) {
+        coveredIds.add(thread.subcategory_id)
         fallbackResults.push(thread)
+      }
+    }
+
+    // Step 2: for subcategories still without a thread, grab the most recent one ever
+    const stillUncovered = uncachedIds.filter((id) => !coveredIds.has(id))
+    if (stillUncovered.length > 0) {
+      const { data: oldData } = await supabase
+        .from('threads')
+        .select('*, subcategory:subcategories(id, name, slug, category:categories(name, slug, icon))')
+        .in('subcategory_id', stillUncovered)
+        .neq('status', 'removed')
+        .order('created_at', { ascending: false })
+
+      const seen = new Set<number>()
+      for (const thread of oldData ?? []) {
+        if (!seen.has(thread.subcategory_id)) {
+          seen.add(thread.subcategory_id)
+          fallbackResults.push(thread)
+        }
       }
     }
   }
