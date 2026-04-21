@@ -16,7 +16,7 @@ export async function PATCH(
   const tokenHash = hashOwnerToken(ownerToken)
   const supabase = createServiceClient()
 
-  // Verify the owner token belongs to the thread this comment is in
+  // Verify the comment exists and get its thread
   const { data: comment } = await supabase
     .from('comments')
     .select('thread_id, is_highlighted')
@@ -25,6 +25,7 @@ export async function PATCH(
 
   if (!comment) return NextResponse.json({ error: 'Komentar tidak ditemukan' }, { status: 404 })
 
+  // Verify the owner token belongs to this thread
   const { data: thread } = await supabase
     .from('threads')
     .select('owner_token_hash')
@@ -35,12 +36,25 @@ export async function PATCH(
     return NextResponse.json({ error: 'Tidak diizinkan' }, { status: 403 })
   }
 
+  // Toggling: if already highlighted → remove highlight; if not → highlight exclusively
+  const newHighlighted = !comment.is_highlighted
+
+  if (newHighlighted) {
+    // Clear any existing highlight in this thread first (only one allowed)
+    await supabase
+      .from('comments')
+      .update({ is_highlighted: false })
+      .eq('thread_id', comment.thread_id)
+      .eq('is_highlighted', true)
+  }
+
+  // Apply the new state to the target comment
   const { error } = await supabase
     .from('comments')
-    .update({ is_highlighted: !comment.is_highlighted })
+    .update({ is_highlighted: newHighlighted })
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  return NextResponse.json({ is_highlighted: !comment.is_highlighted })
+  return NextResponse.json({ is_highlighted: newHighlighted })
 }
