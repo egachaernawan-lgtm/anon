@@ -8,7 +8,7 @@ import { ReactionBar } from './ReactionBar'
 import { StoryCard } from './StoryCard'
 import { shareAsStory } from '@/lib/shareStory'
 import type { Thread } from '@/types'
-import { MessageSquare, Share2 } from 'lucide-react'
+import { Eye, MessageSquare, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Props {
@@ -66,9 +66,14 @@ export function ThreadCard({ thread, onReact }: Props) {
             <span>{thread.comment_count}</span>
           </Link>
 
+          <span className="flex items-center gap-1.5 px-3 py-1.5 text-zinc-600 text-xs">
+            <Eye className="w-3.5 h-3.5" />
+            <span>{thread.view_count ?? 0}</span>
+          </span>
+
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-xs ml-auto"
             aria-label="Bagikan"
           >
             <Share2 className="w-3.5 h-3.5" />

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ThreadCard } from './ThreadCard'
 import { CATEGORIES } from '@/lib/categories'
 import type { Thread } from '@/types'
-import { PenSquare, ChevronRight } from 'lucide-react'
+import { ChevronRight, Plus } from 'lucide-react'
 import { getOrCreateUserUUID } from '@/lib/user'
 import { toast } from 'sonner'
 
@@ -70,14 +70,14 @@ export function HomeFeed() {
   }
 
   return (
-    <div className="pb-24">
+    <div className="pb-28">
       {CATEGORIES.map((cat) =>
         cat.subcategories?.map((sub) => {
           const thread = feed[sub.id] as Thread | undefined
           if (!thread) return null
           return (
             <section key={sub.id} className="px-4 pt-5">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center mb-2">
                 <Link
                   href={`/${sub.slug}`}
                   className="flex items-center gap-1 text-sm font-semibold text-zinc-400 hover:text-white transition-colors"
@@ -85,19 +85,22 @@ export function HomeFeed() {
                   <span className="text-xs text-zinc-600">/{sub.slug}</span>
                   <ChevronRight className="w-3.5 h-3.5 text-zinc-700" />
                 </Link>
-                <Link
-                  href={`/buat?sub=${sub.id}&subSlug=${sub.slug}`}
-                  className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-300 transition-colors"
-                >
-                  <PenSquare className="w-3.5 h-3.5" />
-                  <span>Buat</span>
-                </Link>
               </div>
               <ThreadCard thread={thread} onReact={handleReact} />
             </section>
           )
         })
       )}
+
+      {/* Floating action button — create new thread */}
+      <Link
+        href="/buat"
+        className="fixed bottom-6 right-5 z-40 flex items-center gap-2 bg-white text-black text-sm font-semibold px-4 py-3 rounded-full shadow-lg shadow-black/40 hover:bg-zinc-100 active:scale-95 transition-all"
+        aria-label="Buat thread baru"
+      >
+        <Plus className="w-4 h-4" />
+        <span>Buat Thread</span>
+      </Link>
     </div>
   )
 }

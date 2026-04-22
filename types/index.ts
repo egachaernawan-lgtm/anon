@@ -25,6 +25,7 @@ export interface Thread {
   upvotes: number
   downvotes: number
   comment_count: number
+  view_count: number
   is_ai_flagged: boolean
   created_at: string
   subcategory?: Subcategory
