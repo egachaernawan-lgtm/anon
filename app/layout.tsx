@@ -6,6 +6,7 @@ import { UserInit } from '@/components/UserInit'
 import { Toaster } from '@/components/ui/sonner'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const geist = Geist({ variable: '--font-sans', subsets: ['latin'] })
 
@@ -47,6 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <Toaster position="top-center" richColors />
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
     </html>
   )
 }
