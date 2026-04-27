@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { formatDistanceToNow } from '@/lib/time'
@@ -17,14 +17,53 @@ interface Props {
   onReact?: (threadId: string, type: 'up' | 'down') => void
 }
 
-// Tab height and diagonal slant dimensions (matches SVG proportions)
-const TAB_H = 36   // px — height of the raised tab
-const SLANT_W = 20 // px — horizontal width of the diagonal connector
+// Card shape constants (match SVG proportions)
+const TAB_H  = 38   // height of the raised folder tab
+const SLANT  = 22   // horizontal width of the diagonal slant
+const R      = 12   // corner radius
+
+/** Build the folder-card SVG path for given dimensions and tab label width */
+function buildPath(w: number, h: number, tabLabelW: number): string {
+  const tabEnd = tabLabelW + SLANT
+  return [
+    `M ${R} 0`,
+    `H ${tabLabelW}`,                              // tab top edge
+    `L ${tabEnd} ${TAB_H}`,                        // diagonal slant down
+    `H ${w - R}`,                                  // body top edge →
+    `Q ${w} ${TAB_H} ${w} ${TAB_H + R}`,          // top-right corner
+    `V ${h - R}`,                                  // right side ↓
+    `Q ${w} ${h} ${w - R} ${h}`,                  // bottom-right corner
+    `H ${R}`,                                      // bottom edge ←
+    `Q 0 ${h} 0 ${h - R}`,                        // bottom-left corner
+    `V ${R}`,                                      // left side ↑
+    `Q 0 0 ${R} 0`,                               // top-left corner
+    'Z',
+  ].join(' ')
+}
 
 export function ThreadCard({ thread, onReact }: Props) {
-  const storyRef = useRef<HTMLDivElement>(null)
+  const wrapperRef  = useRef<HTMLDivElement>(null)
+  const tabLabelRef = useRef<HTMLAnchorElement>(null)
+  const storyRef    = useRef<HTMLDivElement>(null)
+
+  const [svgPath, setSvgPath] = useState('')
+
   const color = getCategoryColor(thread.subcategory_id)
-  const slug = (thread.subcategory as unknown as { slug: string })?.slug ?? ''
+  const slug  = (thread.subcategory as unknown as { slug: string })?.slug ?? ''
+
+  // Recompute SVG path whenever card size changes
+  useEffect(() => {
+    const wrapper = wrapperRef.current
+    if (!wrapper) return
+    const ro = new ResizeObserver(() => {
+      const w = wrapper.offsetWidth
+      const h = wrapper.offsetHeight
+      const tabW = tabLabelRef.current?.offsetWidth ?? 120
+      if (w > 0 && h > 0) setSvgPath(buildPath(w, h, tabW))
+    })
+    ro.observe(wrapper)
+    return () => ro.disconnect()
+  }, [])
 
   const handleShare = useCallback(async () => {
     const url = `${window.location.origin}/thread/${thread.id}`
@@ -42,101 +81,81 @@ export function ThreadCard({ thread, onReact }: Props) {
         document.body
       )}
 
-      {/* Outer wrapper reserves space for the tab above the card body */}
-      <div className="mb-3" style={{ paddingTop: `${TAB_H}px`, position: 'relative' }}>
+      <div ref={wrapperRef} className="mb-3" style={{ position: 'relative' }}>
 
-        {/* ── Tab + diagonal, absolutely positioned above the card body ── */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            alignItems: 'stretch',
-            pointerEvents: 'none',
-          }}
-        >
-          {/* Tab rectangle */}
-          <Link
-            href={`/${slug}`}
+        {/* ── SVG card background (exact folder shape) ── */}
+        {svgPath && (
+          <svg
+            aria-hidden
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              height: `${TAB_H}px`,
-              padding: '0 14px',
-              backgroundColor: '#FFFBF1',
-              borderTop: '1.5px solid #DCCAB4',
-              borderLeft: '1.5px solid #DCCAB4',
-              borderRadius: '10px 0 0 0',
-              fontFamily: 'var(--font-space-mono)',
-              fontWeight: 700,
-              fontSize: '13px',
-              color,
-              pointerEvents: 'auto',
-              whiteSpace: 'nowrap',
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+              overflow: 'visible',
             }}
           >
-            /{slug} &gt;
-          </Link>
-
-          {/* Diagonal connector — inline SVG for pixel-perfect diagonal */}
-          <svg
-            width={SLANT_W}
-            height={TAB_H}
-            viewBox={`0 0 ${SLANT_W} ${TAB_H}`}
-            style={{ display: 'block', flexShrink: 0 }}
-          >
-            {/* Fill the lower-left triangle (below hypotenuse) with card background */}
-            <polygon
-              points={`0,0 0,${TAB_H} ${SLANT_W},${TAB_H}`}
-              fill="#FFFBF1"
-            />
-            {/* Draw the hypotenuse border line */}
-            <line
-              x1={0} y1={0}
-              x2={SLANT_W} y2={TAB_H}
-              stroke="#DCCAB4"
-              strokeWidth={1.5}
-            />
+            <path d={svgPath} fill="#FFFBF1" stroke="#DCCAB4" strokeWidth={1.5} />
           </svg>
+        )}
 
-          {/* Top border line for the card body, from slant end to right edge */}
-          <div style={{
-            flex: 1,
-            alignSelf: 'flex-end',
-            borderTop: '1.5px solid #DCCAB4',
-          }} />
-        </div>
+        {/* ── Content (on top of SVG) ── */}
+        <div style={{ position: 'relative' }}>
 
-        {/* ── Main card body ── */}
-        <div
-          style={{
-            backgroundColor: '#FFFBF1',
-            border: '1.5px solid #DCCAB4',
-            borderTop: 'none', // top border is drawn by the tab row above
-            borderRadius: '0 12px 12px 12px',
-          }}
-        >
-          {/* Header row: mask ID + time */}
-          <div
-            className="flex items-center justify-between px-4 pt-3"
-            style={{ fontFamily: 'var(--font-geist-mono)', fontSize: '12px', color: '#C0A280' }}
-          >
-            <span>{thread.mask_id}</span>
-            <span>{formatDistanceToNow(thread.created_at)}</span>
+          {/* Header row: tab label (left) + mask · time (right, at body level) */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', height: TAB_H }}>
+
+            {/* Folder tab label */}
+            <Link
+              ref={tabLabelRef}
+              href={`/${slug}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                height: TAB_H,
+                paddingLeft: 14,
+                paddingRight: 14,
+                fontFamily: 'var(--font-space-mono)',
+                fontWeight: 700,
+                fontSize: 13,
+                color,
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+            >
+              /{slug} &gt;
+            </Link>
+
+            {/* Spacer (covers the diagonal + right gap above body) */}
+            <div style={{ flex: 1 }} />
+
+            {/* Mask · time — sits at body-top level (bottom of the TAB_H row) */}
+            <span
+              style={{
+                fontFamily: 'var(--font-geist-mono)',
+                fontSize: 12,
+                color: '#C0A280',
+                paddingRight: 16,
+                paddingBottom: 6,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {thread.mask_id} · {formatDistanceToNow(thread.created_at)}
+            </span>
           </div>
 
-          {/* Title + content — clickable to thread detail */}
+          {/* Thread title + content */}
           <Link href={`/thread/${thread.id}`} className="block px-4 pt-2 pb-3">
             <h3
-              className="line-clamp-2 mb-2"
+              className="line-clamp-2"
               style={{
                 fontFamily: 'var(--font-space-mono)',
                 fontWeight: 700,
-                fontSize: '15px',
+                fontSize: 15,
                 lineHeight: 1.4,
                 color: '#191919',
+                marginBottom: 6,
               }}
             >
               {thread.title}
@@ -145,7 +164,7 @@ export function ThreadCard({ thread, onReact }: Props) {
               className="line-clamp-3"
               style={{
                 fontFamily: 'var(--font-geist-mono)',
-                fontSize: '13px',
+                fontSize: 13,
                 lineHeight: 1.65,
                 color: '#6B5B45',
               }}
@@ -169,7 +188,7 @@ export function ThreadCard({ thread, onReact }: Props) {
             <Link
               href={`/thread/${thread.id}`}
               className="flex items-center gap-1.5 px-2 py-1 transition-opacity hover:opacity-70"
-              style={{ color: '#C0A280', fontSize: '12px', fontFamily: 'var(--font-geist-mono)' }}
+              style={{ color: '#C0A280', fontSize: 12, fontFamily: 'var(--font-geist-mono)' }}
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>{thread.comment_count}</span>
@@ -177,7 +196,7 @@ export function ThreadCard({ thread, onReact }: Props) {
 
             <span
               className="flex items-center gap-1.5 px-2 py-1"
-              style={{ color: '#C0A280', fontSize: '12px', fontFamily: 'var(--font-geist-mono)' }}
+              style={{ color: '#C0A280', fontSize: 12, fontFamily: 'var(--font-geist-mono)' }}
             >
               <Eye className="w-3.5 h-3.5" />
               <span>{thread.view_count ?? 0}</span>
