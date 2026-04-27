@@ -22,6 +22,9 @@ export async function GET() {
     cachedThreads = data ?? []
   }
 
+  // For subcategories without cache:
+  // 1. Try most active thread in last 24h first
+  // 2. Fall back to most recent thread ever (so the homepage is never empty)
   const allSubcategoryIds = CATEGORIES.flatMap((c) => c.subcategories?.map((s) => s.id) ?? [])
   const uncachedIds = allSubcategoryIds.filter((id) => !cacheMap.has(id))
 
@@ -29,6 +32,7 @@ export async function GET() {
   if (uncachedIds.length > 0) {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
+    // Step 1: most active in last 24h
     const { data: recentData } = await supabase
       .from('threads')
       .select('*, subcategory:subcategories(id, name, slug, category:categories(name, slug, icon))')
@@ -45,6 +49,7 @@ export async function GET() {
       }
     }
 
+    // Step 2: for subcategories still without a thread, grab the most recent one ever
     const stillUncovered = uncachedIds.filter((id) => !coveredIds.has(id))
     if (stillUncovered.length > 0) {
       const { data: oldData } = await supabase

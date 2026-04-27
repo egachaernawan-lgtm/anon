@@ -24,6 +24,9 @@ export async function GET(
     return NextResponse.json({ error: 'Thread tidak ditemukan' }, { status: 404 })
   }
 
+  // Increment view count (fire-and-forget — don't block the response)
+  supabase.rpc('increment_view_count', { thread_id: id }).then(() => {})
+
   // Fetch user's reaction if logged in
   let userReaction = null
   if (userUuid) {

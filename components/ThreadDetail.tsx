@@ -152,12 +152,20 @@ export function ThreadDetail({ threadId }: Props) {
     })
     if (!res.ok) return
     const { is_highlighted } = await res.json()
+
     setComments((prev) =>
-      prev.map((c) =>
-        c.id === commentId
-          ? { ...c, is_highlighted }
-          : { ...c, replies: c.replies?.map((r) => r.id === commentId ? { ...r, is_highlighted } : r) }
-      )
+      prev.map((c) => {
+        // If we just highlighted a new comment, clear all others first
+        const clearOthers = is_highlighted && c.id !== commentId
+        return {
+          ...c,
+          is_highlighted: c.id === commentId ? is_highlighted : clearOthers ? false : c.is_highlighted,
+          replies: c.replies?.map((r) => ({
+            ...r,
+            is_highlighted: r.id === commentId ? is_highlighted : is_highlighted ? false : r.is_highlighted,
+          })),
+        }
+      })
     )
   }, [ownerToken])
 
