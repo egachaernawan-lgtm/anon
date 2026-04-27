@@ -2,35 +2,69 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* ── Brand tokens (light mode only) ──────────────────────────────────────── */
-:root {
-  --green: #55AD88;
-  --red:   #D44652;
-}
+/* Enable class-based dark: Tailwind variant */
+@custom-variant dark (&:is(.dark *));
 
-/* ── Base ─────────────────────────────────────────────────────────────────── */
+/* ── Brand tokens — defined in @layer base so Tailwind always includes them ── */
 @layer base {
+  :root {
+    /* Light palette */
+    --brand-bg:        #FAF4E6;
+    --brand-surface:   #FFFBF1;
+    --brand-border:    #DCCAB4;
+    --brand-text:      #191919;
+    --brand-muted:     #C0A280;
+    --brand-text-soft: #6B5B45;
+    --brand-green:     #55AD88;
+    --brand-red:       #D44652;
+
+    /* Legacy aliases (used by ThreadDetail / CommentItem) */
+    --bg:        var(--brand-bg);
+    --surface:   var(--brand-surface);
+    --text:      var(--brand-text);
+    --muted-clr: var(--brand-muted);
+    --green:     var(--brand-green);
+    --red:       var(--brand-red);
+  }
+
+  html.dark {
+    /* Dark palette */
+    --brand-bg:        #191919;
+    --brand-surface:   #3E473A;
+    --brand-border:    #7D8978;
+    --brand-text:      #FFFBF1;
+    --brand-muted:     #C0A280;
+    --brand-text-soft: #A89880;
+    --brand-green:     #55AD88;
+    --brand-red:       #D44652;
+  }
+
   * {
     -webkit-tap-highlight-color: transparent;
   }
+
   body {
-    background-color: #FAF4E6;
-    color: #191919;
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
     font-family: var(--font-geist-mono), ui-monospace, monospace;
   }
+
   html {
     scroll-behavior: smooth;
   }
 }
 
-/* ── Brand utilities ──────────────────────────────────────────────────────── */
-.brand-bg       { background-color: #FAF4E6; }
-.brand-surface  { background-color: #FFFBF1; }
-.brand-border   { border-color: #DCCAB4; }
-.brand-text     { color: #191919; }
-.brand-muted    { color: #C0A280; }
-.brand-text-soft{ color: #6B5B45; }
-.brand-green    { color: #55AD88; }
-.brand-red      { color: #D44652; }
-.bg-brand-green { background-color: #55AD88; }
-.bg-brand-red   { background-color: #D44652; }
+/* ── Brand utility classes ─────────────────────────────────────────────────── */
+.brand-bg        { background-color: var(--brand-bg); }
+.brand-surface   { background-color: var(--brand-surface); }
+.brand-border    { border-color: var(--brand-border); }
+.brand-text      { color: var(--brand-text); }
+.brand-muted     { color: var(--brand-muted); }
+.brand-text-soft { color: var(--brand-text-soft); }
+.brand-green     { color: var(--brand-green); }
+.brand-red       { color: var(--brand-red); }
+.bg-brand-green  { background-color: var(--brand-green); }
+.bg-brand-red    { background-color: var(--brand-red); }
+
+/* hover helpers */
+.hover\:brand-text:hover { color: var(--brand-text); }

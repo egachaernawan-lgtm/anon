@@ -5,6 +5,7 @@ import './globals.css'
 import { CategoryDrawer } from '@/components/CategoryDrawer'
 import { UserInit } from '@/components/UserInit'
 import { Toaster } from '@/components/ui/sonner'
+import { ThemeProvider } from '@/components/ThemeProvider'
 import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { GoogleAnalytics } from '@next/third-parties/google'
@@ -30,37 +31,42 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${GeistMono.variable} ${spaceMono.variable}`}>
-      <body className="min-h-screen antialiased" style={{ backgroundColor: '#FAF4E6', color: '#191919' }}>
-        <UserInit />
+    <html
+      lang="id"
+      className={`${GeistMono.variable} ${spaceMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen antialiased brand-bg brand-text">
+        <ThemeProvider>
+          <UserInit />
 
-        {/* Sticky header */}
-        <header className="sticky top-0 z-40 backdrop-blur border-b" style={{ backgroundColor: '#FAF4E6', borderColor: '#DCCAB4' }}>
-          <div className="max-w-lg mx-auto px-4 h-12 flex items-center gap-3">
-            <CategoryDrawer />
-            <Link
-              href="/"
-              className="flex-1 text-center font-bold text-base tracking-widest"
-              style={{ fontFamily: 'var(--font-space-mono)', color: '#191919' }}
-            >
-              ANONIMO
-            </Link>
-            <Link
-              href="/cari"
-              className="p-2 rounded-lg transition-colors"
-              style={{ color: '#191919' }}
-              aria-label="Cari"
-            >
-              <Search className="w-5 h-5" />
-            </Link>
-          </div>
-        </header>
+          {/* Sticky header */}
+          <header className="sticky top-0 z-40 brand-bg/95 backdrop-blur border-b brand-border">
+            <div className="max-w-lg mx-auto px-4 h-12 flex items-center gap-3">
+              <CategoryDrawer />
+              <Link
+                href="/"
+                className="flex-1 text-center font-bold text-base tracking-widest brand-text"
+                style={{ fontFamily: 'var(--font-space-mono)' }}
+              >
+                ANONIMO
+              </Link>
+              <Link
+                href="/cari"
+                className="p-2 rounded-lg transition-colors brand-text"
+                aria-label="Cari"
+              >
+                <Search className="w-5 h-5" />
+              </Link>
+            </div>
+          </header>
 
-        <main className="max-w-lg mx-auto w-full min-h-screen">
-          {children}
-        </main>
+          <main className="max-w-lg mx-auto w-full min-h-screen">
+            {children}
+          </main>
 
-        <Toaster position="top-center" richColors />
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
       </body>
       {process.env.NEXT_PUBLIC_GA_ID && (
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />

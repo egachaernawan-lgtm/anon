@@ -229,8 +229,8 @@ export function ThreadDetail({ threadId }: Props) {
   if (loading) {
     return (
       <div className="px-4 pt-4 space-y-4 animate-pulse">
-        <div className="h-5 bg-zinc-800 rounded w-3/4" />
-        <div className="h-20 bg-zinc-900 rounded-xl border border-zinc-800" />
+        <div className="h-5 brand-surface rounded w-3/4" />
+        <div className="h-20 brand-surface rounded-xl border brand-border" />
       </div>
     )
   }
@@ -397,7 +397,7 @@ export function ThreadDetail({ threadId }: Props) {
                 onClick={handlePost}
                 disabled={!commentText.trim() || posting}
                 className="text-sm font-mono font-bold px-4 rounded disabled:opacity-30 transition-colors"
-                style={{ backgroundColor: 'var(--text)', color: 'var(--bg)' }}
+                style={{ backgroundColor: 'var(--brand-text)', color: 'var(--brand-bg)' }}
               >
                 {posting ? '...' : 'Kirim'}
               </button>

@@ -96,7 +96,7 @@ export function ThreadCard({ thread, onReact }: Props) {
               overflow: 'visible',
             }}
           >
-            <path d={svgPath} fill="#FFFBF1" stroke="#DCCAB4" strokeWidth={1.5} />
+            <path d={svgPath} style={{ fill: 'var(--brand-surface)', stroke: 'var(--brand-border)' }} strokeWidth={1.5} />
           </svg>
         )}
 
@@ -135,7 +135,7 @@ export function ThreadCard({ thread, onReact }: Props) {
               style={{
                 fontFamily: 'var(--font-geist-mono)',
                 fontSize: 12,
-                color: '#C0A280',
+                color: 'var(--brand-muted)',
                 paddingRight: 16,
                 paddingBottom: 6,
                 whiteSpace: 'nowrap',
@@ -154,7 +154,7 @@ export function ThreadCard({ thread, onReact }: Props) {
                 fontWeight: 700,
                 fontSize: 15,
                 lineHeight: 1.4,
-                color: '#191919',
+                color: 'var(--brand-text)',
                 marginBottom: 6,
               }}
             >
@@ -166,7 +166,7 @@ export function ThreadCard({ thread, onReact }: Props) {
                 fontFamily: 'var(--font-geist-mono)',
                 fontSize: 13,
                 lineHeight: 1.65,
-                color: '#6B5B45',
+                color: 'var(--brand-text-soft)',
               }}
             >
               {thread.content}
@@ -176,7 +176,7 @@ export function ThreadCard({ thread, onReact }: Props) {
           {/* Stats bar */}
           <div
             className="flex items-center px-3 py-2.5 gap-1"
-            style={{ borderTop: '1px solid #DCCAB4' }}
+            style={{ borderTop: '1px solid var(--brand-border)' }}
           >
             <ReactionBar
               upvotes={thread.upvotes}
@@ -188,7 +188,7 @@ export function ThreadCard({ thread, onReact }: Props) {
             <Link
               href={`/thread/${thread.id}`}
               className="flex items-center gap-1.5 px-2 py-1 transition-opacity hover:opacity-70"
-              style={{ color: '#C0A280', fontSize: 12, fontFamily: 'var(--font-geist-mono)' }}
+              style={{ color: 'var(--brand-muted)', fontSize: 12, fontFamily: 'var(--font-geist-mono)' }}
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>{thread.comment_count}</span>
@@ -196,7 +196,7 @@ export function ThreadCard({ thread, onReact }: Props) {
 
             <span
               className="flex items-center gap-1.5 px-2 py-1"
-              style={{ color: '#C0A280', fontSize: 12, fontFamily: 'var(--font-geist-mono)' }}
+              style={{ color: 'var(--brand-muted)', fontSize: 12, fontFamily: 'var(--font-geist-mono)' }}
             >
               <Eye className="w-3.5 h-3.5" />
               <span>{thread.view_count ?? 0}</span>
@@ -205,7 +205,7 @@ export function ThreadCard({ thread, onReact }: Props) {
             <button
               onClick={handleShare}
               className="flex items-center px-2 py-1 ml-auto transition-opacity hover:opacity-70"
-              style={{ color: '#C0A280' }}
+              style={{ color: 'var(--brand-muted)' }}
               aria-label="Bagikan"
             >
               <Share2 className="w-3.5 h-3.5" />

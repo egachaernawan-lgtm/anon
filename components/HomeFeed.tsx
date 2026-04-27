@@ -57,7 +57,7 @@ export function HomeFeed() {
     return (
       <div className="p-4 space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border h-32 animate-pulse" style={{ backgroundColor: '#FFFBF1', borderColor: '#DCCAB4' }} />
+          <div key={i} className="rounded-lg border h-32 animate-pulse" style={{ backgroundColor: 'var(--brand-surface)', borderColor: 'var(--brand-border)' }} />
         ))}
       </div>
     )
@@ -81,7 +81,7 @@ export function HomeFeed() {
       <Link
         href="/buat"
         className="fixed bottom-6 right-5 z-40 w-14 h-14 flex items-center justify-center rounded-full shadow-lg transition-transform active:scale-95"
-        style={{ backgroundColor: '#55AD88', color: '#fff' }}
+        style={{ backgroundColor: 'var(--brand-green)', color: '#fff' }}
         aria-label="Buat thread baru"
       >
         <Pencil className="w-5 h-5" />
