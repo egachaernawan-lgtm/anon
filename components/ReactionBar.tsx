@@ -1,6 +1,5 @@
 'use client'
 
-import { ChevronUp, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -11,38 +10,29 @@ interface Props {
   size?: 'sm' | 'md'
 }
 
-export function ReactionBar({ upvotes, downvotes, userReaction, onReact, size = 'sm' }: Props) {
-  const iconClass = size === 'md' ? 'w-4 h-4' : 'w-3.5 h-3.5'
-  const btnClass = 'flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors text-xs font-medium'
-
+export function ReactionBar({ upvotes, downvotes, userReaction, onReact }: Props) {
   return (
     <div className="flex items-center gap-1">
       <button
         onClick={() => onReact('up')}
         className={cn(
-          btnClass,
-          userReaction === 'up'
-            ? 'bg-emerald-500/20 text-emerald-400'
-            : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+          'flex items-center gap-1 px-2 py-1.5 rounded text-xs font-mono font-medium transition-colors',
         )}
+        style={{ color: userReaction === 'up' ? '#55AD88' : '#C0A280', fontWeight: userReaction === 'up' ? 700 : 500 }}
         aria-label="Upvote"
       >
-        <ChevronUp className={iconClass} />
-        <span>{upvotes}</span>
+        ∧ <span>{upvotes}</span>
       </button>
 
       <button
         onClick={() => onReact('down')}
         className={cn(
-          btnClass,
-          userReaction === 'down'
-            ? 'bg-rose-500/20 text-rose-400'
-            : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+          'flex items-center gap-1 px-2 py-1.5 rounded text-xs font-mono font-medium transition-colors',
         )}
+        style={{ color: userReaction === 'down' ? '#D44652' : '#C0A280', fontWeight: userReaction === 'down' ? 700 : 500 }}
         aria-label="Downvote"
       >
-        <ChevronDown className={iconClass} />
-        <span>{downvotes}</span>
+        ∨ <span>{downvotes}</span>
       </button>
     </div>
   )

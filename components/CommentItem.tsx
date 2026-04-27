@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { ReactionBar } from './ReactionBar'
 import { formatDistanceToNow } from '@/lib/time'
 import type { Comment } from '@/types'
-import { Star, Reply } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -32,27 +31,37 @@ export function CommentItem({
   const hasReplies = (comment.replies?.length ?? 0) > 0
 
   return (
-    <div className={cn(depth > 0 && 'ml-4 pl-3 border-l border-zinc-800')}>
+    <div className={cn(depth > 0 && 'ml-4 pl-3 border-l brand-border')}>
       <div
         className={cn(
-          'rounded-xl p-3 mb-2 transition-colors',
-          comment.is_highlighted
-            ? 'bg-amber-500/10 border border-amber-500/30'
-            : 'bg-zinc-900 border border-zinc-800'
+          'rounded-lg p-3 mb-2 border transition-colors font-mono',
+          comment.is_highlighted ? 'border-l-4' : 'brand-surface brand-border'
         )}
+        style={comment.is_highlighted ? {
+          backgroundColor: 'color-mix(in srgb, var(--green) 12%, var(--surface))',
+          borderColor: 'var(--border)',
+          borderLeftColor: 'var(--green)',
+        } : {}}
       >
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-xs font-semibold text-zinc-300">{comment.mask_id}</span>
-          {comment.is_highlighted && (
-            <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full flex items-center gap-1">
-              <Star className="w-3 h-3" /> Pilihan Pembuat
-            </span>
-          )}
-          <span className="text-xs text-zinc-600 ml-auto">{formatDistanceToNow(comment.created_at)}</span>
+        {/* Comment header */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold brand-text font-mono">{comment.mask_id}</span>
+            {comment.is_highlighted && (
+              <span
+                className="text-xs px-1.5 py-0.5 rounded font-mono font-bold"
+                style={{ color: 'var(--green)', backgroundColor: 'color-mix(in srgb, var(--green) 15%, transparent)' }}
+              >
+                ★ Pilihan
+              </span>
+            )}
+          </div>
+          <span className="text-xs brand-muted font-mono">{formatDistanceToNow(comment.created_at)}</span>
         </div>
 
-        <p className="text-sm text-zinc-300 leading-relaxed">{comment.content}</p>
+        <p className="text-sm brand-text leading-relaxed font-mono">{comment.content}</p>
 
+        {/* Action row */}
         <div className="flex items-center gap-1 mt-2">
           <ReactionBar
             upvotes={comment.upvotes}
@@ -64,10 +73,9 @@ export function CommentItem({
           {depth === 0 && (
             <button
               onClick={() => onReply(comment.id, comment.mask_id)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors text-xs"
+              className="flex items-center gap-1 px-2 py-1.5 rounded text-xs font-mono brand-muted hover:brand-text transition-colors"
             >
-              <Reply className="w-3.5 h-3.5" />
-              <span>Balas</span>
+              ↩ Balas
             </button>
           )}
 
@@ -75,13 +83,12 @@ export function CommentItem({
             <button
               onClick={() => onHighlight(comment.id)}
               className={cn(
-                'flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors text-xs ml-auto',
-                comment.is_highlighted
-                  ? 'text-amber-400 hover:bg-amber-500/10'
-                  : 'text-zinc-600 hover:text-amber-400 hover:bg-zinc-800'
+                'flex items-center gap-1 px-2 py-1.5 rounded text-xs font-mono transition-colors ml-auto',
+                comment.is_highlighted ? 'font-bold' : 'brand-muted hover:brand-text'
               )}
+              style={comment.is_highlighted ? { color: 'var(--green)' } : {}}
             >
-              <Star className="w-3.5 h-3.5" />
+              ★
             </button>
           )}
         </div>
@@ -109,7 +116,7 @@ export function CommentItem({
       {hasReplies && (
         <button
           onClick={() => setShowReplies(!showReplies)}
-          className="text-xs text-zinc-600 hover:text-zinc-400 mb-2 ml-3"
+          className="text-xs font-mono brand-muted hover:brand-text mb-2 ml-3 transition-colors"
         >
           {showReplies ? 'Sembunyikan balasan' : `Lihat ${comment.replies!.length} balasan`}
         </button>

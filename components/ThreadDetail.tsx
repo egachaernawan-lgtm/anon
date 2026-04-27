@@ -8,7 +8,8 @@ import { ReactionBar } from './ReactionBar'
 import { StoryCard } from './StoryCard'
 import { shareAsStory } from '@/lib/shareStory'
 import type { Thread, Comment } from '@/types'
-import { ArrowLeft, Share2, MessageSquare, Lock, Trash2 } from 'lucide-react'
+import { ArrowLeft, Lock, Trash2 } from 'lucide-react'
+import { getCategoryColor } from '@/lib/categoryColors'
 import { formatDistanceToNow } from '@/lib/time'
 import { getOrCreateUserUUID, getOwnerToken } from '@/lib/user'
 import { toast } from 'sonner'
@@ -238,6 +239,7 @@ export function ThreadDetail({ threadId }: Props) {
   const isOwner = !!ownerToken
   const isClosed = thread.status !== 'open'
   const subcategorySlug = (thread.subcategory as unknown as { slug: string })?.slug
+  const categoryColor = getCategoryColor(thread.subcategory_id)
 
   return (
     <>
@@ -253,36 +255,46 @@ export function ThreadDetail({ threadId }: Props) {
 
     <div className="pb-32">
       {/* Back nav */}
-      <div className="sticky top-12 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-800 px-4 py-2 flex items-center gap-3">
-        <Link href={subcategorySlug ? `/${subcategorySlug}` : '/'} className="text-zinc-500 hover:text-white">
+      <div className="sticky top-12 z-30 brand-bg/95 backdrop-blur border-b brand-border px-4 py-2 flex items-center gap-3">
+        <Link href={subcategorySlug ? `/${subcategorySlug}` : '/'} className="brand-muted hover:brand-text transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <span className="text-xs text-zinc-600 flex-1">
-          {subcategorySlug ? `/${subcategorySlug}` : 'Anon'}
+        <span
+          className="text-xs font-mono font-bold flex-1"
+          style={{ color: categoryColor }}
+        >
+          &lt;/{subcategorySlug ?? 'anon'}&gt;
         </span>
-        <button onClick={handleShare} className="text-zinc-500 hover:text-white">
-          <Share2 className="w-4 h-4" />
+        <button onClick={handleShare} className="brand-muted hover:brand-text transition-colors font-mono text-sm">
+          ↗
         </button>
       </div>
 
       {/* Thread content */}
       <div className="px-4 pt-4">
         {isClosed && (
-          <div className="flex items-center gap-2 text-xs text-zinc-500 bg-zinc-900 rounded-lg px-3 py-2 mb-3 border border-zinc-800">
+          <div className="flex items-center gap-2 text-xs font-mono brand-muted brand-surface rounded px-3 py-2 mb-3 border brand-border">
             <Lock className="w-3.5 h-3.5" />
             Thread ini sudah ditutup
           </div>
         )}
 
-        <h1 className="text-base font-bold text-white leading-snug mb-2">{thread.title}</h1>
-        <p className="text-xs text-zinc-500 mb-3">
+        <h1
+          className="text-base font-bold brand-text leading-snug mb-2"
+          style={{ fontFamily: 'var(--font-space-mono)' }}
+        >
+          {thread.title}
+        </h1>
+        <p className="text-xs font-mono brand-muted mb-3">
           {thread.mask_id}
-          {isOwner && <span className="ml-1.5 text-amber-500 text-xs">[Pembuat]</span>}
+          {isOwner && (
+            <span className="ml-1.5 text-xs font-bold" style={{ color: 'var(--green)' }}>[Pembuat]</span>
+          )}
           {' · '}{formatDistanceToNow(thread.created_at)}
         </p>
-        <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{thread.content}</p>
+        <p className="text-sm font-mono brand-text-soft leading-relaxed whitespace-pre-wrap">{thread.content}</p>
 
-        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-zinc-800">
+        <div className="flex items-center gap-2 mt-4 pt-3 border-t brand-border">
           <ReactionBar
             upvotes={thread.upvotes}
             downvotes={thread.downvotes}
@@ -290,23 +302,23 @@ export function ThreadDetail({ threadId }: Props) {
             onReact={handleReact}
             size="md"
           />
-          <span className="flex items-center gap-1 text-xs text-zinc-500 ml-1">
-            <MessageSquare className="w-3.5 h-3.5" />
-            {thread.comment_count} komentar
+          <span className="flex items-center gap-1 text-xs font-mono brand-muted ml-1">
+            □ {thread.comment_count}
           </span>
           {isOwner && (
             <div className="ml-auto flex gap-2">
               {!isClosed && (
                 <button
                   onClick={() => handleThreadAction('close')}
-                  className="text-xs text-zinc-600 hover:text-zinc-300 flex items-center gap-1"
+                  className="text-xs font-mono brand-muted hover:brand-text flex items-center gap-1 transition-colors"
                 >
                   <Lock className="w-3.5 h-3.5" />
                 </button>
               )}
               <button
                 onClick={() => handleThreadAction('delete')}
-                className="text-xs text-rose-700 hover:text-rose-400 flex items-center gap-1"
+                className="text-xs font-mono flex items-center gap-1 transition-colors"
+                style={{ color: 'var(--red)' }}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -317,17 +329,16 @@ export function ThreadDetail({ threadId }: Props) {
 
       {/* Comments */}
       <div className="px-4 pt-4">
-        <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <MessageSquare className="w-3.5 h-3.5" />
-          Komentar
+        <h2 className="text-xs font-mono font-bold brand-muted uppercase tracking-wider mb-3">
+          KOMENTAR
         </h2>
 
         {comments.length === 0 ? (
-          <p className="text-center text-sm text-zinc-600 py-8">
+          <p className="text-center text-sm font-mono brand-muted py-8">
             Belum ada komentar. Jadilah yang pertama!
           </p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {comments.map((comment) => (
               <CommentItem
                 key={comment.id}
@@ -350,12 +361,12 @@ export function ThreadDetail({ threadId }: Props) {
 
       {/* Comment input bar */}
       {!isClosed && (
-        <div className="fixed bottom-0 left-0 right-0 bg-zinc-950 border-t border-zinc-800 px-4 pt-3 pb-safe">
+        <div className="fixed bottom-0 left-0 right-0 brand-bg border-t brand-border px-4 pt-3 pb-safe">
           <div className="max-w-lg mx-auto">
             {replyTo && (
-              <div className="flex items-center justify-between text-xs text-zinc-500 mb-2 bg-zinc-900 rounded-lg px-3 py-2">
-                <span>Membalas <strong>{replyTo.mask}</strong></span>
-                <button onClick={() => setReplyTo(null)} className="text-zinc-600 hover:text-white">✕</button>
+              <div className="flex items-center justify-between text-xs font-mono brand-muted mb-2 brand-surface rounded px-3 py-2 border brand-border">
+                <span>Membalas <strong className="brand-text">{replyTo.mask}</strong></span>
+                <button onClick={() => setReplyTo(null)} className="brand-muted hover:brand-text">✕</button>
               </div>
             )}
             <div className="flex gap-2">
@@ -366,7 +377,7 @@ export function ThreadDetail({ threadId }: Props) {
                 placeholder={replyTo ? `Balas ${replyTo.mask}...` : 'Tulis komentar...'}
                 maxLength={replyTo ? 300 : 500}
                 rows={2}
-                className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-500 transition-colors"
+                className="flex-1 brand-surface border brand-border rounded px-3 py-2 text-sm font-mono brand-text placeholder:brand-muted resize-none focus:outline-none transition-colors"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
@@ -377,12 +388,13 @@ export function ThreadDetail({ threadId }: Props) {
               <button
                 onClick={handlePost}
                 disabled={!commentText.trim() || posting}
-                className="bg-white text-black text-sm font-semibold px-4 rounded-xl disabled:opacity-30 hover:bg-zinc-100 transition-colors"
+                className="text-sm font-mono font-bold px-4 rounded disabled:opacity-30 transition-colors"
+                style={{ backgroundColor: 'var(--text)', color: 'var(--bg)' }}
               >
                 {posting ? '...' : 'Kirim'}
               </button>
             </div>
-            <p className="text-xs text-zinc-700 mt-1 text-right">
+            <p className="text-xs font-mono brand-muted mt-1 text-right">
               {commentText.length}/{replyTo ? 300 : 500}
             </p>
           </div>

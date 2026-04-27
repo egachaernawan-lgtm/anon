@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { ThreadCard } from './ThreadCard'
 import { CATEGORIES } from '@/lib/categories'
 import type { Thread } from '@/types'
-import { PenSquare, ChevronRight } from 'lucide-react'
 import { getOrCreateUserUUID } from '@/lib/user'
 import { toast } from 'sonner'
+import { Pencil } from 'lucide-react'
 
 export function HomeFeed() {
   const [feed, setFeed] = useState<Record<number, Thread>>({})
@@ -29,10 +29,7 @@ export function HomeFeed() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type }),
     })
-    if (!res.ok) {
-      toast.error('Gagal memberi reaksi')
-      return
-    }
+    if (!res.ok) { toast.error('Gagal memberi reaksi'); return }
     const { reaction } = await res.json()
 
     setFeed((prev) => {
@@ -58,46 +55,37 @@ export function HomeFeed() {
 
   if (loading) {
     return (
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="space-y-3">
-            <div className="h-4 bg-zinc-800 rounded w-24 animate-pulse" />
-            <div className="h-28 bg-zinc-900 rounded-xl border border-zinc-800 animate-pulse" />
-          </div>
+          <div key={i} className="rounded-lg border h-32 animate-pulse" style={{ backgroundColor: '#FFFBF1', borderColor: '#DCCAB4' }} />
         ))}
       </div>
     )
   }
 
   return (
-    <div className="pb-24">
+    <div className="pb-28 px-3 pt-3">
       {CATEGORIES.map((cat) =>
         cat.subcategories?.map((sub) => {
           const thread = feed[sub.id] as Thread | undefined
           if (!thread) return null
           return (
-            <section key={sub.id} className="px-4 pt-5">
-              <div className="flex items-center justify-between mb-2">
-                <Link
-                  href={`/${sub.slug}`}
-                  className="flex items-center gap-1 text-sm font-semibold text-zinc-400 hover:text-white transition-colors"
-                >
-                  <span className="text-xs text-zinc-600">/{sub.slug}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-zinc-700" />
-                </Link>
-                <Link
-                  href={`/buat?sub=${sub.id}&subSlug=${sub.slug}`}
-                  className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-300 transition-colors"
-                >
-                  <PenSquare className="w-3.5 h-3.5" />
-                  <span>Buat</span>
-                </Link>
-              </div>
+            <section key={sub.id} className="mb-2">
               <ThreadCard thread={thread} onReact={handleReact} />
             </section>
           )
         })
       )}
+
+      {/* Floating action button */}
+      <Link
+        href="/buat"
+        className="fixed bottom-6 right-5 z-40 w-14 h-14 flex items-center justify-center rounded-full shadow-lg transition-transform active:scale-95"
+        style={{ backgroundColor: '#55AD88', color: '#fff' }}
+        aria-label="Buat thread baru"
+      >
+        <Pencil className="w-5 h-5" />
+      </Link>
     </div>
   )
 }

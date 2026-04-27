@@ -7,8 +7,8 @@ import { formatDistanceToNow } from '@/lib/time'
 import { ReactionBar } from './ReactionBar'
 import { StoryCard } from './StoryCard'
 import { shareAsStory } from '@/lib/shareStory'
+import { getCategoryColor } from '@/lib/categoryColors'
 import type { Thread } from '@/types'
-import { MessageSquare, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Props {
@@ -18,61 +18,103 @@ interface Props {
 
 export function ThreadCard({ thread, onReact }: Props) {
   const storyRef = useRef<HTMLDivElement>(null)
+  const color = getCategoryColor(thread.subcategory_id)
+  const slug = (thread.subcategory as unknown as { slug: string })?.slug ?? ''
 
   const handleShare = useCallback(async () => {
     const url = `${window.location.origin}/thread/${thread.id}`
     if (!storyRef.current) return
-
     const result = await shareAsStory(storyRef.current, url, thread.title)
     if (result === 'copied') toast.success('Link disalin!')
   }, [thread])
 
   return (
     <>
-      {/* Off-screen story card for image capture */}
       {typeof window !== 'undefined' && createPortal(
         <div style={{ position: 'fixed', left: '-9999px', top: '-9999px', zIndex: -1 }}>
-          <div ref={storyRef}>
-            <StoryCard thread={thread} />
-          </div>
+          <div ref={storyRef}><StoryCard thread={thread} /></div>
         </div>,
         document.body
       )}
 
-      <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-colors">
-        <Link href={`/thread/${thread.id}`} className="block px-4 pt-4 pb-3">
-          <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2 mb-1.5">
-            {thread.title}
-          </h3>
-          <p className="text-zinc-400 text-xs leading-relaxed line-clamp-3">{thread.content}</p>
-          <p className="text-zinc-600 text-xs mt-2">
-            {thread.mask_id} · {formatDistanceToNow(thread.created_at)}
-          </p>
-        </Link>
-
-        <div className="px-4 pb-3 flex items-center gap-1">
-          <ReactionBar
-            upvotes={thread.upvotes}
-            downvotes={thread.downvotes}
-            userReaction={thread.user_reaction ?? null}
-            onReact={(type) => onReact?.(thread.id, type)}
-          />
-
+      {/* Folder wrapper */}
+      <div className="mb-3">
+        {/* Folder tab */}
+        <div className="flex items-center" style={{ paddingLeft: '12px' }}>
           <Link
-            href={`/thread/${thread.id}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-xs ml-1"
+            href={`/${slug}`}
+            className="inline-flex items-center px-3 py-1 text-xs font-mono font-bold rounded-t-md transition-opacity hover:opacity-80"
+            style={{ backgroundColor: color, color: '#FFFBF1' }}
           >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>{thread.comment_count}</span>
+            /{slug}
+          </Link>
+        </div>
+
+        {/* Card body — top-left corner is flat where the tab sits */}
+        <div
+          className="border overflow-hidden"
+          style={{
+            backgroundColor: '#FFFBF1',
+            borderColor: color,
+            borderWidth: '1.5px',
+            borderRadius: '0 8px 8px 8px',
+          }}
+        >
+          {/* Meta row: mask + time */}
+          <div className="px-3 pt-3 flex items-center justify-between gap-2">
+            <span className="text-xs font-mono" style={{ color: '#C0A280' }}>
+              {thread.mask_id}
+            </span>
+            <span className="text-xs font-mono" style={{ color: '#C0A280' }}>
+              {formatDistanceToNow(thread.created_at)}
+            </span>
+          </div>
+
+          {/* Content */}
+          <Link href={`/thread/${thread.id}`} className="block px-3 pt-2 pb-2">
+            <h3
+              className="font-bold text-sm leading-snug line-clamp-2 mb-1"
+              style={{ fontFamily: 'var(--font-space-mono)', color: '#191919' }}
+            >
+              {thread.title}
+            </h3>
+            <p className="text-xs leading-relaxed line-clamp-3 font-mono" style={{ color: '#6B5B45' }}>
+              {thread.content}
+            </p>
           </Link>
 
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-xs"
-            aria-label="Bagikan"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-          </button>
+          {/* Stats bar */}
+          <div className="px-3 pb-3 flex items-center gap-0.5 font-mono text-xs border-t" style={{ borderColor: '#DCCAB4' }}>
+            <div className="pt-2">
+              <ReactionBar
+                upvotes={thread.upvotes}
+                downvotes={thread.downvotes}
+                userReaction={thread.user_reaction ?? null}
+                onReact={(type) => onReact?.(thread.id, type)}
+              />
+            </div>
+
+            <Link
+              href={`/thread/${thread.id}`}
+              className="flex items-center gap-1 px-2 py-1.5 pt-3 transition-colors"
+              style={{ color: '#C0A280' }}
+            >
+              □ <span>{thread.comment_count}</span>
+            </Link>
+
+            <span className="flex items-center gap-1 px-2 py-1.5 pt-3" style={{ color: '#C0A280' }}>
+              ⊙ <span>{thread.view_count ?? 0}</span>
+            </span>
+
+            <button
+              onClick={handleShare}
+              className="flex items-center px-2 py-1.5 pt-3 transition-colors ml-auto"
+              style={{ color: '#C0A280' }}
+              aria-label="Bagikan"
+            >
+              ↗
+            </button>
+          </div>
         </div>
       </div>
     </>
