@@ -5,7 +5,6 @@ import { CATEGORIES } from '@/lib/categories'
 export async function GET() {
   const supabase = createServiceClient()
 
-  // Try to get cached home feed first
   const { data: cached } = await supabase
     .from('home_feed_cache')
     .select('subcategory_id, thread_id, updated_at')
@@ -70,7 +69,6 @@ export async function GET() {
     }
   }
 
-  // Combine and group by subcategory
   const allThreads = [...cachedThreads, ...fallbackResults]
   const bySubcategory = new Map<number, unknown>()
   for (const thread of allThreads) {
