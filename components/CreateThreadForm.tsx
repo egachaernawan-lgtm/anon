@@ -69,10 +69,10 @@ export function CreateThreadForm() {
         <Link href="/" className="text-zinc-500 hover:text-white">
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <h1 className="text-base font-bold text-white">Buat Thread Baru</h1>
+        <h1 className="text-base font-bold text-white" style={{ color: '#000000' }}>Buat Thread Baru</h1>
       </div>
 
-      <div className="bg-zinc-900 text-zinc-400 text-xs rounded-xl px-4 py-3 mb-5 border border-zinc-800">
+      <div className="bg-zinc-900 text-zinc-400 text-xs rounded-xl px-4 py-3 mb-5 border border-zinc-800" style={{ backgroundColor: '#FFFBF1', color: '#000000', borderColor: '#DCCAB4' }}>
         🔒 Thread ini akan diposting secara anonim. Tidak ada yang tahu identitasmu.
       </div>
 
@@ -83,6 +83,7 @@ export function CreateThreadForm() {
             value={subcategoryId ?? ''}
             onChange={(e) => setSubcategoryId(Number(e.target.value))}
             className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-zinc-500 transition-colors"
+            style={{ backgroundColor: '#FFFBF1', color: '#000000', borderColor: '#DCCAB4' }}
             required
           >
             <option value="" disabled>Pilih kategori...</option>
@@ -107,6 +108,7 @@ export function CreateThreadForm() {
             placeholder="Tulis judul yang jelas dan menarik..."
             maxLength={150}
             className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
+            style={{ backgroundColor: '#FFFBF1', color: '#000000', borderColor: '#DCCAB4' }}
             required
           />
         </div>
@@ -122,6 +124,7 @@ export function CreateThreadForm() {
             maxLength={2000}
             rows={8}
             className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-500 transition-colors"
+            style={{ backgroundColor: '#FFFBF1', color: '#000000', borderColor: '#DCCAB4' }}
             required
           />
         </div>
@@ -136,6 +139,7 @@ export function CreateThreadForm() {
           type="submit"
           disabled={submitting}
           className="w-full bg-white text-black font-semibold py-3 rounded-xl hover:bg-zinc-100 transition-colors disabled:opacity-50 text-sm"
+          style={{ backgroundColor: '#7D8978', color: '#ffffff', borderColor: '#3E473A' }}
         >
           {submitting ? 'Memposting...' : 'Posting Thread'}
         </button>
