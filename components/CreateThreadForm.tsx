@@ -72,7 +72,7 @@ export function CreateThreadForm() {
         <h1 className="text-base font-bold text-white">Buat Thread Baru</h1>
       </div>
 
-      <div className="bg-zinc-900 text-zinc-400 text-xs rounded-xl px-4 py-3 mb-5 border border-zinc-800">
+      <div className="text-xs rounded-xl px-4 py-3 mb-5 border border-zinc-800" style={{ backgroundColor: '#FFFBF1', color: '#191919' }}>
         🔒 Thread ini akan diposting secara anonim. Tidak ada yang tahu identitasmu.
       </div>
 
@@ -82,7 +82,8 @@ export function CreateThreadForm() {
           <select
             value={subcategoryId ?? ''}
             onChange={(e) => setSubcategoryId(Number(e.target.value))}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-zinc-500 transition-colors"
+            className="w-full border border-zinc-700 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-zinc-500 transition-colors"
+            style={{ backgroundColor: '#FFFBF1', color: '#000000' }}
             required
           >
             <option value="" disabled>Pilih kategori...</option>
@@ -106,7 +107,8 @@ export function CreateThreadForm() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Tulis judul yang jelas dan menarik..."
             maxLength={150}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
+            className="w-full border border-zinc-700 rounded-xl px-3 py-2.5 text-sm placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
+            style={{ backgroundColor: '#FFFBF1', color: '#000000' }}
             required
           />
         </div>
