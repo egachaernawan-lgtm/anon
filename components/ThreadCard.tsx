@@ -17,49 +17,27 @@ interface Props {
   onReact?: (threadId: string, type: 'up' | 'down') => void
 }
 
-// Card shape constants (match SVG proportions)
-const TAB_H  = 38   // height of the raised folder tab
-const SLANT  = 22   // horizontal width of the diagonal slant
-const R      = 12   // corner radius
+// Exact path from design SVG (viewBox 0 0 944 486)
+const CARD_PATH = 'M24 0.5H289.001C298.732 0.500151 307.457 6.49802 310.942 15.584L333.033 73.1787L333.156 73.5H920C932.979 73.5 943.5 84.0213 943.5 97V462C943.5 474.979 932.979 485.5 920 485.5H24C11.0213 485.5 0.5 474.979 0.5 462V24C0.5 11.0213 11.0213 0.500001 24 0.5Z'
 
-/** Build the folder-card SVG path for given dimensions and tab label width */
-function buildPath(w: number, h: number, tabLabelW: number): string {
-  const tabEnd = tabLabelW + SLANT
-  return [
-    `M ${R} 0`,
-    `H ${tabLabelW}`,                              // tab top edge
-    `L ${tabEnd} ${TAB_H}`,                        // diagonal slant down
-    `H ${w - R}`,                                  // body top edge →
-    `Q ${w} ${TAB_H} ${w} ${TAB_H + R}`,          // top-right corner
-    `V ${h - R}`,                                  // right side ↓
-    `Q ${w} ${h} ${w - R} ${h}`,                  // bottom-right corner
-    `H ${R}`,                                      // bottom edge ←
-    `Q 0 ${h} 0 ${h - R}`,                        // bottom-left corner
-    `V ${R}`,                                      // left side ↑
-    `Q 0 0 ${R} 0`,                               // top-left corner
-    'Z',
-  ].join(' ')
-}
+// Tab height ratio from design: y=73.5 out of viewBox height 486
+const TAB_RATIO = 73.5 / 486
 
 export function ThreadCard({ thread, onReact }: Props) {
-  const wrapperRef  = useRef<HTMLDivElement>(null)
-  const tabLabelRef = useRef<HTMLAnchorElement>(null)
-  const storyRef    = useRef<HTMLDivElement>(null)
-
-  const [svgPath, setSvgPath] = useState('')
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const storyRef   = useRef<HTMLDivElement>(null)
+  const [tabH, setTabH] = useState(38)
 
   const color = getCategoryColor(thread.subcategory_id)
   const slug  = (thread.subcategory as unknown as { slug: string })?.slug ?? ''
 
-  // Recompute SVG path whenever card size changes
+  // Track card height so tab content aligns with the SVG's tab region
   useEffect(() => {
     const wrapper = wrapperRef.current
     if (!wrapper) return
     const ro = new ResizeObserver(() => {
-      const w = wrapper.offsetWidth
       const h = wrapper.offsetHeight
-      const tabW = tabLabelRef.current?.offsetWidth ?? 120
-      if (w > 0 && h > 0) setSvgPath(buildPath(w, h, tabW))
+      if (h > 0) setTabH(Math.round(h * TAB_RATIO))
     })
     ro.observe(wrapper)
     return () => ro.disconnect()
@@ -83,37 +61,39 @@ export function ThreadCard({ thread, onReact }: Props) {
 
       <div ref={wrapperRef} className="mb-3" style={{ position: 'relative' }}>
 
-        {/* ── SVG card background (exact folder shape) ── */}
-        {svgPath && (
-          <svg
-            aria-hidden
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none',
-              overflow: 'visible',
-            }}
-          >
-            <path d={svgPath} style={{ fill: 'var(--brand-surface)', stroke: 'var(--brand-border)' }} strokeWidth={1.5} />
-          </svg>
-        )}
+        {/* SVG card background — exact design path, stretches to fill */}
+        <svg
+          aria-hidden
+          viewBox="0 0 944 486"
+          preserveAspectRatio="none"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+          }}
+        >
+          <path
+            d={CARD_PATH}
+            style={{ fill: 'var(--brand-surface)', stroke: 'var(--brand-border)' }}
+            strokeWidth="1"
+          />
+        </svg>
 
-        {/* ── Content (on top of SVG) ── */}
+        {/* Content (on top of SVG) */}
         <div style={{ position: 'relative' }}>
 
           {/* Header row: tab label (left) + mask · time (right, at body level) */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', height: TAB_H }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', height: tabH }}>
 
             {/* Folder tab label */}
             <Link
-              ref={tabLabelRef}
               href={`/${slug}`}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                height: TAB_H,
+                height: tabH,
                 paddingLeft: 14,
                 paddingRight: 14,
                 fontFamily: 'var(--font-space-mono)',
@@ -127,10 +107,9 @@ export function ThreadCard({ thread, onReact }: Props) {
               /{slug} &gt;
             </Link>
 
-            {/* Spacer (covers the diagonal + right gap above body) */}
             <div style={{ flex: 1 }} />
 
-            {/* Mask · time — sits at body-top level (bottom of the TAB_H row) */}
+            {/* Mask · time — at body-top level (bottom of the tab row) */}
             <span
               style={{
                 fontFamily: 'var(--font-geist-mono)',
