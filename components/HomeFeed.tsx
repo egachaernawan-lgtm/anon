@@ -2,16 +2,21 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ThreadCard } from './ThreadCard'
 import { CATEGORIES } from '@/lib/categories'
 import type { Thread } from '@/types'
 import { getOrCreateUserUUID } from '@/lib/user'
 import { toast } from 'sonner'
-import { Pencil } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 export function HomeFeed() {
   const [feed, setFeed] = useState<Record<number, Thread>>({})
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
+  const { resolvedTheme } = useTheme()
+
+  useEffect(() => setMounted(true), [])
 
   useEffect(() => {
     fetch('/api/home')
@@ -78,14 +83,20 @@ export function HomeFeed() {
       )}
 
       {/* Floating action button */}
-      <Link
-        href="/buat"
-        className="fixed bottom-6 right-5 z-40 w-14 h-14 flex items-center justify-center rounded-full shadow-lg transition-transform active:scale-95"
-        style={{ backgroundColor: 'var(--brand-green)', color: '#fff' }}
-        aria-label="Buat thread baru"
-      >
-        <Pencil className="w-5 h-5" />
-      </Link>
+      {mounted && (
+        <Link
+          href="/buat"
+          className="fixed bottom-6 right-5 z-40 transition-transform active:scale-95"
+          aria-label="Buat thread baru"
+        >
+          <Image
+            src={resolvedTheme === 'dark' ? '/fab-dark.svg' : '/fab-light.svg'}
+            alt="Buat thread baru"
+            width={64}
+            height={64}
+          />
+        </Link>
+      )}
     </div>
   )
 }
