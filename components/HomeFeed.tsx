@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { ThreadCard } from './ThreadCard'
 import { CATEGORIES } from '@/lib/categories'
 import type { Thread } from '@/types'
@@ -89,7 +88,8 @@ export function HomeFeed() {
           className="fixed bottom-6 right-5 z-40 transition-transform active:scale-95"
           aria-label="Buat thread baru"
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={resolvedTheme === 'dark' ? '/fab-dark.svg' : '/fab-light.svg'}
             alt="Buat thread baru"
             width={64}
