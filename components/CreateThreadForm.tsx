@@ -123,7 +123,8 @@ export function CreateThreadForm() {
             placeholder="Ceritakan lebih detail. Kamu anonim, bebas bicara..."
             maxLength={2000}
             rows={8}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-500 transition-colors"
+            className="w-full border border-zinc-700 rounded-xl px-3 py-2.5 text-sm placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-500 transition-colors"
+            style={{ backgroundColor: '#FFFBF1', color: '#000000' }}
             required
           />
         </div>
@@ -137,7 +138,8 @@ export function CreateThreadForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full bg-white text-black font-semibold py-3 rounded-xl hover:bg-zinc-100 transition-colors disabled:opacity-50 text-sm"
+          className="w-full font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 text-sm"
+          style={{ backgroundColor: '#7D8978', color: '#ffffff', borderColor: '#3E473A' }}
         >
           {submitting ? 'Memposting...' : 'Posting Thread'}
         </button>
