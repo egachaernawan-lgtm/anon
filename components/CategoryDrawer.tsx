@@ -30,7 +30,7 @@ export function CategoryDrawer() {
             className="brand-text font-bold text-lg tracking-widest"
             style={{ fontFamily: 'var(--font-space-mono)' }}
           >
-            ANONIMO
+            YAPPR
           </SheetTitle>
         </SheetHeader>
 
