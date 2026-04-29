@@ -26,10 +26,14 @@
     --green:     var(--brand-green);
     --red:       var(--brand-red);
 
-    /* Kirim button — light mode */
+    /* Kirim / Posting button — light mode */
     --btn-kirim-bg:     #7D8978;
     --btn-kirim-border: #3E473A;
     --btn-kirim-text:   #FFFBF1;
+
+    /* MyThreads card — light mode */
+    --mythread-card-bg:     #FFFBF1;
+    --mythread-card-border: #DCCAB4;
   }
 
   html.dark {
@@ -43,10 +47,14 @@
     --brand-green:     #55AD88;
     --brand-red:       #D44652;
 
-    /* Kirim button — dark mode */
+    /* Kirim / Posting button — dark mode */
     --btn-kirim-bg:     #FAF4E6;
     --btn-kirim-border: #C0A280;
     --btn-kirim-text:   #191919;
+
+    /* MyThreads card — dark mode */
+    --mythread-card-bg:     #7D8978;
+    --mythread-card-border: #3E473A;
   }
 
   * {

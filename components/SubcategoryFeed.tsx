@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { ThreadCard } from './ThreadCard'
 import type { Thread } from '@/types'
-import { PenSquare, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { findSubcategoryBySlug } from '@/lib/categories'
 
@@ -39,7 +39,6 @@ export function SubcategoryFeed({ subcategoryId, subcategorySlug, subcategoryNam
     loadThreads(1)
   }, [loadThreads])
 
-  // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -86,36 +85,53 @@ export function SubcategoryFeed({ subcategoryId, subcategorySlug, subcategoryNam
 
   return (
     <div className="pb-24">
-      {/* Subcategory header */}
-      <div className="sticky top-12 z-30 bg-zinc-950/95 backdrop-blur border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
+      {/* Subcategory header — always #C0A280 background */}
+      <div
+        className="sticky top-12 z-30 px-4 py-3 flex items-center justify-between"
+        style={{ backgroundColor: '#C0A280' }}
+      >
         <div className="flex items-center gap-2">
-          <Link href="/" className="text-zinc-500 hover:text-white transition-colors">
+          <Link href="/" style={{ color: '#FFFBF1' }} className="transition-opacity hover:opacity-70">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div>
-            <p className="text-xs text-zinc-600">{found?.category.name}</p>
-            <h1 className="text-sm font-bold text-white">{subcategoryName}</h1>
+            <p className="text-xs" style={{ color: '#FFFBF1', opacity: 0.75, fontFamily: 'var(--font-geist-mono)' }}>
+              {found?.category.name}
+            </p>
+            <h1
+              className="text-sm font-bold"
+              style={{ color: '#FFFBF1', fontFamily: 'var(--font-geist-mono)' }}
+            >
+              {subcategoryName}
+            </h1>
           </div>
         </div>
+
+        {/* FAB-style write button — same as homepage */}
         <Link
           href={`/buat?sub=${subcategoryId}&subSlug=${subcategorySlug}`}
-          className="flex items-center gap-1.5 bg-white text-black text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-zinc-100 transition-colors"
+          className="transition-transform active:scale-95"
+          aria-label="Buat thread baru"
         >
-          <PenSquare className="w-3.5 h-3.5" />
-          Buat Thread
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/fab-dark.svg" alt="Buat thread" width={48} height={48} />
         </Link>
       </div>
 
       <div className="px-4 pt-4 space-y-3">
         {loading && threads.length === 0 ? (
           [1, 2, 3].map((i) => (
-            <div key={i} className="h-28 bg-zinc-900 rounded-xl border border-zinc-800 animate-pulse" />
+            <div
+              key={i}
+              className="h-28 rounded-xl border animate-pulse"
+              style={{ backgroundColor: 'var(--brand-surface)', borderColor: 'var(--brand-border)' }}
+            />
           ))
         ) : threads.length === 0 ? (
-          <div className="text-center py-16 text-zinc-600">
+          <div className="text-center py-16" style={{ color: 'var(--brand-muted)' }}>
             <p className="text-4xl mb-3">💬</p>
-            <p className="text-sm">Belum ada thread di sini.</p>
-            <p className="text-xs mt-1">Jadilah yang pertama!</p>
+            <p className="text-sm" style={{ fontFamily: 'var(--font-geist-mono)' }}>Belum ada thread di sini.</p>
+            <p className="text-xs mt-1" style={{ fontFamily: 'var(--font-geist-mono)' }}>Jadilah yang pertama!</p>
           </div>
         ) : (
           threads.map((thread) => (
@@ -126,7 +142,12 @@ export function SubcategoryFeed({ subcategoryId, subcategorySlug, subcategoryNam
         {hasMore && <div ref={loaderRef} className="h-8" />}
 
         {!hasMore && threads.length > 0 && (
-          <p className="text-center text-xs text-zinc-700 py-4">Semua thread sudah dimuat</p>
+          <p
+            className="text-center text-xs py-4"
+            style={{ color: 'var(--brand-muted)', fontFamily: 'var(--font-geist-mono)' }}
+          >
+            Semua thread sudah dimuat
+          </p>
         )}
       </div>
     </div>

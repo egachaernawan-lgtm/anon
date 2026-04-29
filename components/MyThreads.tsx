@@ -19,7 +19,6 @@ export function MyThreads() {
     const local = getLocalThreads()
     if (local.length === 0) { setLoading(false); return }
 
-    // Fetch current comment counts
     const ids = local.map((t) => t.threadId)
     Promise.all(
       ids.map((id) =>
@@ -47,28 +46,51 @@ export function MyThreads() {
 
   return (
     <div className="px-4 pt-4 pb-20">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/" className="text-zinc-500 hover:text-white">
+        <Link href="/" className="brand-muted hover:brand-text transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <h1 className="text-base font-bold text-white">Threads Saya</h1>
+        <h1
+          className="text-base font-bold brand-text"
+          style={{ fontFamily: 'var(--font-geist-mono)' }}
+        >
+          Threads Saya
+        </h1>
       </div>
 
-      <p className="text-xs text-zinc-600 mb-5">
+      {/* PSA — #C0A280 both themes */}
+      <p
+        className="text-xs mb-5"
+        style={{ fontFamily: 'var(--font-geist-mono)', color: '#C0A280' }}
+      >
         Thread yang kamu buat disimpan di perangkat ini. Bersihkan browser untuk menghapus riwayat.
       </p>
 
       {loading ? (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-20 bg-zinc-900 rounded-xl border border-zinc-800 animate-pulse" />
+            <div
+              key={i}
+              className="h-20 rounded-xl border animate-pulse"
+              style={{ backgroundColor: 'var(--mythread-card-bg)', borderColor: 'var(--mythread-card-border)' }}
+            />
           ))}
         </div>
       ) : threads.length === 0 ? (
-        <div className="text-center py-16 text-zinc-600">
+        <div className="text-center py-16" style={{ color: 'var(--brand-muted)' }}>
           <p className="text-4xl mb-3">📭</p>
-          <p className="text-sm">Belum ada thread yang kamu buat.</p>
-          <Link href="/buat" className="mt-4 inline-block text-xs text-white bg-zinc-800 px-4 py-2 rounded-full hover:bg-zinc-700">
+          <p className="text-sm" style={{ fontFamily: 'var(--font-geist-mono)' }}>Belum ada thread yang kamu buat.</p>
+          <Link
+            href="/buat"
+            className="mt-4 inline-block text-xs px-4 py-2 rounded-full"
+            style={{
+              fontFamily: 'var(--font-geist-mono)',
+              backgroundColor: 'var(--btn-kirim-bg)',
+              color: 'var(--btn-kirim-text)',
+              border: '1.5px solid var(--btn-kirim-border)',
+            }}
+          >
             Buat Thread Pertama
           </Link>
         </div>
@@ -79,26 +101,48 @@ export function MyThreads() {
               key={thread.threadId}
               href={`/thread/${thread.threadId}`}
               onClick={() => handleVisit(thread.threadId, thread.currentCount ?? 0)}
-              className="block bg-zinc-900 rounded-xl border border-zinc-800 hover:border-zinc-700 transition-colors p-4"
+              className="block rounded-xl border p-4 transition-opacity hover:opacity-80"
+              style={{
+                backgroundColor: 'var(--mythread-card-bg)',
+                borderColor: 'var(--mythread-card-border)',
+              }}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white line-clamp-2">{thread.title}</p>
-                  <p className="text-xs text-zinc-600 mt-1">
+                  <p
+                    className="text-sm font-semibold line-clamp-2"
+                    style={{ fontFamily: 'var(--font-geist-mono)', color: 'var(--brand-text)' }}
+                  >
+                    {thread.title}
+                  </p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ fontFamily: 'var(--font-geist-mono)', color: '#C0A280' }}
+                  >
                     {thread.subcategorySlug ? `/${thread.subcategorySlug} · ` : ''}
                     {formatDistanceToNow(thread.createdAt)}
                   </p>
                 </div>
-                <ExternalLink className="w-4 h-4 text-zinc-700 flex-shrink-0 mt-0.5" />
+                <ExternalLink className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#C0A280' }} />
               </div>
 
               <div className="flex items-center gap-2 mt-3">
-                <span className="flex items-center gap-1 text-xs text-zinc-500">
+                <span
+                  className="flex items-center gap-1 text-xs"
+                  style={{ fontFamily: 'var(--font-geist-mono)', color: '#C0A280' }}
+                >
                   <MessageSquare className="w-3.5 h-3.5" />
                   {thread.currentCount ?? 0} komentar
                 </span>
                 {(thread.newComments ?? 0) > 0 && (
-                  <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-medium">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{
+                      fontFamily: 'var(--font-geist-mono)',
+                      backgroundColor: 'rgba(85,173,136,0.2)',
+                      color: 'var(--brand-green)',
+                    }}
+                  >
                     +{thread.newComments} baru
                   </span>
                 )}
