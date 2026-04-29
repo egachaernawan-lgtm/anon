@@ -46,7 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <CategoryDrawer />
               <Link
                 href="/"
-                className="flex-1 text-center font-bold text-base tracking-widest brand-text"
+                className="flex-1 text-center font-bold text-xl tracking-widest brand-text"
                 style={{ fontFamily: 'var(--font-space-mono)' }}
               >
                 ANONIMO

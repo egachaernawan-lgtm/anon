@@ -17,29 +17,65 @@ interface Props {
   onReact?: (threadId: string, type: 'up' | 'down') => void
 }
 
-// Exact path from design SVG (viewBox 0 0 944 486)
-const CARD_PATH = 'M24 0.5H289.001C298.732 0.500151 307.457 6.49802 310.942 15.584L333.033 73.1787L333.156 73.5H920C932.979 73.5 943.5 84.0213 943.5 97V462C943.5 474.979 932.979 485.5 920 485.5H24C11.0213 485.5 0.5 474.979 0.5 462V24C0.5 11.0213 11.0213 0.500001 24 0.5Z'
+const TAB_H = 36  // tab height in px
+const R     = 10  // corner radius in px
+const PAD_L = 14  // tab label left padding
+const PAD_R = 10  // tab label right padding before slant
 
-// Tab height ratio from design: y=73.5 out of viewBox height 486
-const TAB_RATIO = 73.5 / 486
+/**
+ * Build the folder-card path with a dynamic tab width.
+ * The bezier + diagonal proportions match the design file.
+ */
+function buildCardPath(w: number, h: number, tabTextW: number): string {
+  const tabEnd = PAD_L + tabTextW + PAD_R  // where tab top edge ends
+
+  // Bezier: smooth S-curve from tab top into the diagonal
+  const bx1 = tabEnd + 9   // CP1 — same Y, eases right
+  const bx2 = tabEnd + 18  // CP2 — starts dropping
+  const by2 = 10
+  const bex = tabEnd + 22  // bezier end X
+  const bey = 14            // bezier end Y
+
+  // Diagonal line from bezier end down to body level
+  const diagX = tabEnd + 38
+
+  return [
+    `M ${R} 0.5`,
+    `H ${tabEnd}`,
+    `C ${bx1} 0.5 ${bx2} ${by2} ${bex} ${bey}`,
+    `L ${diagX} ${TAB_H}`,
+    `H ${w - R}`,
+    `Q ${w} ${TAB_H} ${w} ${TAB_H + R}`,
+    `V ${h - R}`,
+    `Q ${w} ${h} ${w - R} ${h}`,
+    `H ${R}`,
+    `Q 0 ${h} 0 ${h - R}`,
+    `V ${R}`,
+    `Q 0 0 ${R} 0.5`,
+    'Z',
+  ].join(' ')
+}
 
 export function ThreadCard({ thread, onReact }: Props) {
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const storyRef   = useRef<HTMLDivElement>(null)
-  const [tabH, setTabH] = useState(38)
+  const wrapperRef  = useRef<HTMLDivElement>(null)
+  const tabLabelRef = useRef<HTMLAnchorElement>(null)
+  const storyRef    = useRef<HTMLDivElement>(null)
+  const [svgPath, setSvgPath] = useState('')
 
   const color = getCategoryColor(thread.subcategory_id)
   const slug  = (thread.subcategory as unknown as { slug: string })?.slug ?? ''
 
-  // Track card height so tab content aligns with the SVG's tab region
   useEffect(() => {
     const wrapper = wrapperRef.current
     if (!wrapper) return
     const ro = new ResizeObserver(() => {
+      const w = wrapper.offsetWidth
       const h = wrapper.offsetHeight
-      if (h > 0) setTabH(Math.round(h * TAB_RATIO))
+      const tabTextW = tabLabelRef.current?.offsetWidth ?? 100
+      if (w > 0 && h > 0) setSvgPath(buildCardPath(w, h, tabTextW))
     })
     ro.observe(wrapper)
+    if (tabLabelRef.current) ro.observe(tabLabelRef.current)
     return () => ro.disconnect()
   }, [])
 
@@ -61,42 +97,44 @@ export function ThreadCard({ thread, onReact }: Props) {
 
       <div ref={wrapperRef} className="mb-3" style={{ position: 'relative' }}>
 
-        {/* SVG card background — exact design path, stretches to fill */}
-        <svg
-          aria-hidden
-          viewBox="0 0 944 486"
-          preserveAspectRatio="none"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            pointerEvents: 'none',
-          }}
-        >
-          <path
-            d={CARD_PATH}
-            style={{ fill: 'var(--brand-surface)', stroke: 'var(--brand-border)' }}
-            strokeWidth="1"
-          />
-        </svg>
+        {/* SVG card background — dynamic path matching tab label width */}
+        {svgPath && (
+          <svg
+            aria-hidden
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+              overflow: 'visible',
+            }}
+          >
+            <path
+              d={svgPath}
+              style={{ fill: 'var(--brand-surface)', stroke: 'var(--brand-border)' }}
+              strokeWidth="1"
+            />
+          </svg>
+        )}
 
         {/* Content (on top of SVG) */}
         <div style={{ position: 'relative' }}>
 
-          {/* Header row: tab label (left) + mask · time (right, at body level) */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', height: tabH }}>
+          {/* Header row: tab label (left) + mask · time (right) */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', height: TAB_H }}>
 
             {/* Folder tab label */}
             <Link
+              ref={tabLabelRef}
               href={`/${slug}`}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                height: tabH,
-                paddingLeft: 14,
-                paddingRight: 14,
-                fontFamily: 'var(--font-space-mono)',
+                height: TAB_H,
+                paddingLeft: PAD_L,
+                paddingRight: PAD_R,
+                fontFamily: 'var(--font-geist-mono)',
                 fontWeight: 700,
                 fontSize: 13,
                 color,
@@ -109,7 +147,7 @@ export function ThreadCard({ thread, onReact }: Props) {
 
             <div style={{ flex: 1 }} />
 
-            {/* Mask · time — at body-top level (bottom of the tab row) */}
+            {/* Mask · time */}
             <span
               style={{
                 fontFamily: 'var(--font-geist-mono)',
@@ -129,7 +167,7 @@ export function ThreadCard({ thread, onReact }: Props) {
             <h3
               className="line-clamp-2"
               style={{
-                fontFamily: 'var(--font-space-mono)',
+                fontFamily: 'var(--font-geist-mono)',
                 fontWeight: 700,
                 fontSize: 15,
                 lineHeight: 1.4,
@@ -152,11 +190,8 @@ export function ThreadCard({ thread, onReact }: Props) {
             </p>
           </Link>
 
-          {/* Stats bar */}
-          <div
-            className="flex items-center px-3 py-2.5 gap-1"
-            style={{ borderTop: '1px solid var(--brand-border)' }}
-          >
+          {/* Stats bar — no top border per design QA */}
+          <div className="flex items-center px-3 pb-2.5 gap-1">
             <ReactionBar
               upvotes={thread.upvotes}
               downvotes={thread.downvotes}
