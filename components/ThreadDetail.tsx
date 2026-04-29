@@ -8,7 +8,7 @@ import { ReactionBar } from './ReactionBar'
 import { StoryCard } from './StoryCard'
 import { shareAsStory } from '@/lib/shareStory'
 import type { Thread, Comment } from '@/types'
-import { ArrowLeft, Lock, Trash2 } from 'lucide-react'
+import { ArrowLeft, Lock, Trash2, Share2 } from 'lucide-react'
 import { getCategoryColor } from '@/lib/categoryColors'
 import { formatDistanceToNow } from '@/lib/time'
 import { getOrCreateUserUUID, getOwnerToken } from '@/lib/user'
@@ -268,13 +268,12 @@ export function ThreadDetail({ threadId }: Props) {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <span
-          className="text-xs font-mono font-bold flex-1"
-          style={{ color: categoryColor }}
+          style={{ fontFamily: 'var(--font-geist-mono)', fontWeight: 700, fontSize: 13, color: categoryColor, flex: 1 }}
         >
-          &lt;/{subcategorySlug ?? 'anon'}&gt;
+          /{subcategorySlug ?? 'anon'}
         </span>
-        <button onClick={handleShare} className="brand-muted hover:brand-text transition-colors font-mono text-sm">
-          ↗
+        <button onClick={handleShare} className="brand-muted hover:brand-text transition-colors">
+          <Share2 className="w-5 h-5" />
         </button>
       </div>
 
@@ -289,7 +288,7 @@ export function ThreadDetail({ threadId }: Props) {
 
         <h1
           className="text-base font-bold brand-text leading-snug mb-2"
-          style={{ fontFamily: 'var(--font-space-mono)' }}
+          style={{ fontFamily: 'var(--font-geist-mono)' }}
         >
           {thread.title}
         </h1>
@@ -302,7 +301,7 @@ export function ThreadDetail({ threadId }: Props) {
         </p>
         <p className="text-sm font-mono brand-text-soft leading-relaxed whitespace-pre-wrap">{thread.content}</p>
 
-        <div className="flex items-center gap-2 mt-4 pt-3 border-t brand-border">
+        <div className="flex items-center gap-2 mt-4 pt-3">
           <ReactionBar
             upvotes={thread.upvotes}
             downvotes={thread.downvotes}
@@ -382,10 +381,11 @@ export function ThreadDetail({ threadId }: Props) {
                 ref={textareaRef}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder={replyTo ? `Balas ${replyTo.mask}...` : 'Tulis komentar...'}
+                placeholder={replyTo ? `Balas ${replyTo.mask}...` : 'Tulis Komentar'}
                 maxLength={replyTo ? 300 : 500}
                 rows={2}
-                className="flex-1 brand-surface border brand-border rounded px-3 py-2 text-sm font-mono brand-text placeholder:brand-muted resize-none focus:outline-none transition-colors"
+                className="flex-1 brand-surface border brand-border rounded px-3 py-2 text-sm brand-text placeholder:brand-muted resize-none focus:outline-none transition-colors"
+                style={{ fontFamily: 'var(--font-geist-mono)' }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
@@ -396,8 +396,13 @@ export function ThreadDetail({ threadId }: Props) {
               <button
                 onClick={handlePost}
                 disabled={!commentText.trim() || posting}
-                className="text-sm font-mono font-bold px-4 rounded disabled:opacity-30 transition-colors"
-                style={{ backgroundColor: 'var(--brand-text)', color: 'var(--brand-bg)' }}
+                className="text-sm font-bold px-4 rounded disabled:opacity-30 transition-colors"
+                style={{
+                  fontFamily: 'var(--font-geist-mono)',
+                  backgroundColor: 'var(--btn-kirim-bg)',
+                  border: '1.5px solid var(--btn-kirim-border)',
+                  color: 'var(--btn-kirim-text)',
+                }}
               >
                 {posting ? '...' : 'Kirim'}
               </button>

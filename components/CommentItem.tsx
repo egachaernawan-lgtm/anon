@@ -46,7 +46,7 @@ export function CommentItem({
         {/* Comment header */}
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold brand-text font-mono">{comment.mask_id}</span>
+            <span style={{ fontFamily: 'var(--font-geist-mono)', fontSize: 12, color: 'var(--brand-muted)', fontWeight: 400 }}>{comment.mask_id}</span>
             {comment.is_highlighted && (
               <span
                 className="text-xs px-1.5 py-0.5 rounded font-mono font-bold"
@@ -83,7 +83,7 @@ export function CommentItem({
             <button
               onClick={() => onHighlight(comment.id)}
               className={cn(
-                'flex items-center gap-1 px-2 py-1.5 rounded text-xs font-mono transition-colors ml-auto',
+                'flex items-center gap-1 px-2 py-1.5 rounded text-xl transition-colors ml-auto',
                 comment.is_highlighted ? 'font-bold' : 'brand-muted hover:brand-text'
               )}
               style={comment.is_highlighted ? { color: 'var(--green)' } : {}}
