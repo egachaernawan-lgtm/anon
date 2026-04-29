@@ -12,8 +12,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const found = findSubcategoryBySlug(subcategory)
   if (!found) return {}
   return {
-    title: `/${subcategory} — Anon`,
-    description: `Diskusi ${found.subcategory.name} di Anon`,
+    title: `/${subcategory} — YAPPR`,
+    description: `Diskusi ${found.subcategory.name} di YAPPR`,
   }
 }
 

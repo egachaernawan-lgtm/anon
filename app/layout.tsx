@@ -17,7 +17,7 @@ const spaceMono = Space_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Anonimo — Forum Anonim Indonesia',
+  title: 'YAPPR — Forum Anonim Indonesia',
   description: 'Tempat aman untuk berbagi cerita, bertanya, dan berdiskusi secara anonim.',
   manifest: '/manifest.json',
 }
@@ -49,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 className="flex-1 text-center font-bold text-xl tracking-widest brand-text"
                 style={{ fontFamily: 'var(--font-space-mono)' }}
               >
-                ANONIMO
+                YAPPR
               </Link>
               <Link
                 href="/cari"

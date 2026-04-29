@@ -46,7 +46,7 @@ export function StoryCard({ thread, subcategoryName }: Props) {
           fontSize: '22px', fontWeight: '800', color: '#ffffff',
           letterSpacing: '-0.5px',
         }}>
-          Anon
+          YAPPR
         </div>
         {subcategoryName && (
           <>
