@@ -7,13 +7,11 @@ import { CATEGORIES, getAllSubcategories } from '@/lib/categories'
 import { saveLocalThread } from '@/lib/user'
 import { toast } from 'sonner'
 import { ArrowLeft } from 'lucide-react'
-import { v4 as uuidv4 } from 'uuid'
 
 export function CreateThreadForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialSubId = Number(searchParams.get('sub')) || undefined
-  const initialSubSlug = searchParams.get('subSlug') ?? ''
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -43,11 +41,8 @@ export function CreateThreadForm() {
       return
     }
 
-    if (data.warningMessage) {
-      toast.warning(data.warningMessage)
-    }
+    if (data.warningMessage) toast.warning(data.warningMessage)
 
-    // Store owner token locally
     const sub = subcategories.find((s) => s.id === subcategoryId)
     saveLocalThread({
       threadId: data.thread.id,
@@ -62,31 +57,53 @@ export function CreateThreadForm() {
     router.push(`/thread/${data.thread.id}`)
   }, [title, content, subcategoryId, subcategories, router])
 
-  // Group subcategories by category for select display
+  const inputStyle = {
+    fontFamily: 'var(--font-geist-mono)',
+    backgroundColor: 'var(--brand-surface)',
+    borderColor: 'var(--brand-border)',
+    color: 'var(--brand-text)',
+  }
+
   return (
     <div className="px-4 pt-4 pb-20">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/" className="text-zinc-500 hover:text-white">
+        <Link href="/" className="brand-muted hover:brand-text transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <h1 className="text-base font-bold text-white" style={{ color: '#FFFFFF' }}>Buat Thread Baru</h1>
+        <h1
+          className="text-base font-bold brand-text"
+          style={{ fontFamily: 'var(--font-geist-mono)' }}
+        >
+          Buat Thread Baru
+        </h1>
       </div>
 
-      <div className="bg-zinc-900 text-zinc-400 text-xs rounded-xl px-4 py-3 mb-5 border border-zinc-800" style={{ backgroundColor: '#3E473A', color: '#FFFFFF', borderColor: '#7D8978' }}>
+      {/* Anonymous notice — always #C0A280 bg */}
+      <div
+        className="text-xs rounded-xl px-4 py-3 mb-5"
+        style={{ backgroundColor: '#C0A280', color: '#FFFFFF', fontFamily: 'var(--font-geist-mono)' }}
+      >
         🔒 Thread ini akan diposting secara anonim. Tidak ada yang tahu identitasmu.
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Category */}
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Kategori</label>
+          <label
+            className="block text-xs font-medium mb-1.5"
+            style={{ fontFamily: 'var(--font-geist-mono)', color: 'var(--brand-muted)' }}
+          >
+            Kategori
+          </label>
           <select
             value={subcategoryId ?? ''}
             onChange={(e) => setSubcategoryId(Number(e.target.value))}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-zinc-500 transition-colors"
-            style={{ backgroundColor: '#3E473A', color: '#FFFFFF', borderColor: '#7D8978' }}
+            className="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none transition-colors"
+            style={inputStyle}
             required
           >
-            <option value="" disabled>Pilih kategori...</option>
+            <option value="" disabled style={{ color: 'var(--brand-muted)' }}>Pilih kategori...</option>
             {CATEGORIES.map((cat) => (
               <optgroup key={cat.id} label={`${cat.icon} ${cat.name}`}>
                 {cat.subcategories?.map((sub) => (
@@ -97,9 +114,13 @@ export function CreateThreadForm() {
           </select>
         </div>
 
+        {/* Title */}
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-            Judul <span className="text-zinc-600">({title.length}/150)</span>
+          <label
+            className="block text-xs font-medium mb-1.5"
+            style={{ fontFamily: 'var(--font-geist-mono)', color: 'var(--brand-muted)' }}
+          >
+            Judul <span>({title.length}/150)</span>
           </label>
           <input
             type="text"
@@ -107,15 +128,19 @@ export function CreateThreadForm() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Tulis judul yang jelas dan menarik..."
             maxLength={150}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
-            style={{ backgroundColor: '#3E473A', color: '#FFFFFF', borderColor: '#7D8978' }}
+            className="w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none transition-colors placeholder:text-[#C0A280]"
+            style={inputStyle}
             required
           />
         </div>
 
+        {/* Content */}
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-            Isi Thread <span className="text-zinc-600">({content.length}/2000)</span>
+          <label
+            className="block text-xs font-medium mb-1.5"
+            style={{ fontFamily: 'var(--font-geist-mono)', color: 'var(--brand-muted)' }}
+          >
+            Isi Thread <span>({content.length}/2000)</span>
           </label>
           <textarea
             value={content}
@@ -123,23 +148,33 @@ export function CreateThreadForm() {
             placeholder="Ceritakan lebih detail. Kamu anonim, bebas bicara..."
             maxLength={2000}
             rows={8}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-500 transition-colors"
-            style={{ backgroundColor: '#3E473A', color: '#FFFFFF', borderColor: '#7D8978' }}
+            className="w-full border rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none transition-colors placeholder:text-[#C0A280]"
+            style={inputStyle}
             required
           />
         </div>
 
-        <div className="text-xs text-zinc-600 space-y-1">
+        {/* Community rules — outside box, #C0A280 */}
+        <div
+          className="text-xs space-y-1"
+          style={{ fontFamily: 'var(--font-geist-mono)', color: '#C0A280' }}
+        >
           <p>📋 Aturan komunitas:</p>
           <p>• Dilarang memposting konten SARA, kekerasan, atau doxxing</p>
           <p>• Konten akan dimoderasi oleh AI secara otomatis</p>
         </div>
 
+        {/* Submit button — uses same vars as Kirim */}
         <button
           type="submit"
           disabled={submitting}
-          className="w-full bg-white text-black font-semibold py-3 rounded-xl hover:bg-zinc-100 transition-colors disabled:opacity-50 text-sm"
-          style={{ backgroundColor: '#FAF4E6', color: '#000000', borderColor: '#7D8978' }}
+          className="w-full font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 text-sm"
+          style={{
+            fontFamily: 'var(--font-geist-mono)',
+            backgroundColor: 'var(--btn-kirim-bg)',
+            border: '1.5px solid var(--btn-kirim-border)',
+            color: 'var(--btn-kirim-text)',
+          }}
         >
           {submitting ? 'Memposting...' : 'Posting Thread'}
         </button>
