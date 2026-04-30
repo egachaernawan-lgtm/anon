@@ -1,5 +1,6 @@
 // Brand category color palette — one accent color per category
 // category_id → hex color
+// Used by the CategoryDrawer for category name labels.
 export const CATEGORY_COLORS: Record<number, string> = {
   1: '#F27420', // Olahraga    — orange
   2: '#2097F2', // Hiburan     — blue
@@ -9,7 +10,16 @@ export const CATEGORY_COLORS: Record<number, string> = {
   6: '#F2C94C', // Lainnya     — yellow
 }
 
-// subcategory_id → parent category_id
+// Per-subcategory feed colors (thread cards, thread detail breadcrumb).
+// Intentionally separate from CATEGORY_COLORS so the drawer is unaffected.
+// subcategory_id → hex color
+const SUB_FEED_COLORS: Record<number, string> = {
+  23: '#F27420', // Kehidupan — orange
+  24: '#F674A6', // Cinta     — pink
+  25: '#55AD88', // Uang      — green
+}
+
+// subcategory_id → parent category_id (legacy subcategories kept for safety)
 const SUB_TO_CAT: Record<number, number> = {
   1: 1, 2: 1, 3: 1, 4: 1,           // Olahraga
   5: 2, 6: 2, 7: 2, 8: 2, 9: 2,    // Hiburan
@@ -20,6 +30,9 @@ const SUB_TO_CAT: Record<number, number> = {
 }
 
 export function getCategoryColor(subcategoryId: number): string {
+  // Check subcategory-specific feed color first
+  if (SUB_FEED_COLORS[subcategoryId]) return SUB_FEED_COLORS[subcategoryId]
+  // Fall back to parent category color
   const catId = SUB_TO_CAT[subcategoryId]
   return CATEGORY_COLORS[catId] ?? '#C0A280'
 }
