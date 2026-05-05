@@ -1,9 +1,9 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Anthropic from '@anthropic-ai/sdk'
 import type { ModerationResult } from '@/types'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+const client = new Anthropic()   // reads ANTHROPIC_API_KEY from env
 
-const SYSTEM_PROMPT = `Kamu adalah moderator konten untuk platform diskusi anonim bernama Anon yang ditujukan untuk pengguna Indonesia berusia 16+.
+const SYSTEM_PROMPT = `Kamu adalah moderator konten untuk platform diskusi anonim bernama YAPPR yang ditujukan untuk pengguna Indonesia berusia 16+.
 
 Tugasmu adalah memeriksa konten thread atau komentar dan mengembalikan respons JSON dengan format:
 {"safe":boolean,"maskedContent":string,"warningMessage":string|null,"blocked":boolean}
@@ -22,18 +22,18 @@ Kembalikan HANYA JSON, tanpa markdown, tanpa teks lain.`
 
 export async function moderateContent(content: string): Promise<ModerationResult> {
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      systemInstruction: SYSTEM_PROMPT,
+    const message = await client.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 256,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: `Periksa konten berikut:\n\n${content}` }],
     })
 
-    const result = await model.generateContent(`Periksa konten berikut:\n\n${content}`)
-    const text = result.response.text().trim()
-
-    // Strip markdown code fences if present
-    const clean = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()
+    const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+    const clean = raw.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()
     return JSON.parse(clean) as ModerationResult
   } catch {
+    // Fail open so a missing key never blocks posting
     return { safe: true, maskedContent: content, warningMessage: null, blocked: false }
   }
 }

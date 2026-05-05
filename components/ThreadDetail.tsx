@@ -264,14 +264,17 @@ export function ThreadDetail({ threadId }: Props) {
     <div className="pb-32">
       {/* Back nav */}
       <div className="sticky top-12 z-30 brand-bg/95 backdrop-blur border-b brand-border px-4 py-2 flex items-center gap-3">
-        <Link href={subcategorySlug ? `/${subcategorySlug}` : '/'} className="brand-muted hover:brand-text transition-colors">
+        {/* Back → always home */}
+        <Link href="/" className="brand-muted hover:brand-text transition-colors" aria-label="Beranda">
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <span
+        {/* Subcategory chip → opens that subcategory feed */}
+        <Link
+          href={subcategorySlug ? `/${subcategorySlug}` : '/'}
           style={{ fontFamily: 'var(--font-geist-mono)', fontWeight: 700, fontSize: 13, color: categoryColor, flex: 1 }}
         >
           /{subcategorySlug ?? 'anon'}
-        </span>
+        </Link>
         <button onClick={handleShare} className="brand-muted hover:brand-text transition-colors">
           <Share2 className="w-5 h-5" />
         </button>

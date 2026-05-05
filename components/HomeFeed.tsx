@@ -3,14 +3,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { ThreadCard } from './ThreadCard'
-import { CATEGORIES } from '@/lib/categories'
 import type { Thread } from '@/types'
 import { getOrCreateUserUUID } from '@/lib/user'
 import { toast } from 'sonner'
 import { useTheme } from 'next-themes'
 
 export function HomeFeed() {
-  const [feed, setFeed] = useState<Record<number, Thread>>({})
+  const [threads, setThreads] = useState<Thread[]>([])
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const { resolvedTheme } = useTheme()
@@ -20,7 +19,7 @@ export function HomeFeed() {
   useEffect(() => {
     fetch('/api/home')
       .then((r) => r.json())
-      .then((d) => setFeed(d.feed ?? {}))
+      .then((d) => setThreads(d.threads ?? []))
       .finally(() => setLoading(false))
   }, [])
 
@@ -28,58 +27,79 @@ export function HomeFeed() {
     const uuid = getOrCreateUserUUID()
     if (!uuid) return
 
+    // Optimistic update
+    setThreads((prev) =>
+      prev.map((t) => {
+        if (t.id !== threadId) return t
+        const updated = { ...t }
+        if (updated.user_reaction === type) {
+          type === 'up' ? updated.upvotes-- : updated.downvotes--
+          updated.user_reaction = null
+        } else {
+          if (updated.user_reaction === 'up') updated.upvotes--
+          if (updated.user_reaction === 'down') updated.downvotes--
+          type === 'up' ? updated.upvotes++ : updated.downvotes++
+          updated.user_reaction = type
+        }
+        return updated
+      })
+    )
+
     const res = await fetch(`/api/threads/${threadId}/react`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type }),
     })
-    if (!res.ok) { toast.error('Gagal memberi reaksi'); return }
-    const { reaction } = await res.json()
-
-    setFeed((prev) => {
-      const updated = { ...prev }
-      for (const [key, thread] of Object.entries(updated)) {
-        if (thread.id === threadId) {
-          const t = { ...thread }
-          if (t.user_reaction === type) {
-            type === 'up' ? t.upvotes-- : t.downvotes--
-            t.user_reaction = null
+    if (!res.ok) {
+      toast.error('Gagal memberi reaksi')
+      // Roll back optimistic update
+      setThreads((prev) =>
+        prev.map((t) => {
+          if (t.id !== threadId) return t
+          const rolled = { ...t }
+          if (rolled.user_reaction === type) {
+            type === 'up' ? rolled.upvotes-- : rolled.downvotes--
+            rolled.user_reaction = null
           } else {
-            if (t.user_reaction === 'up') t.upvotes--
-            if (t.user_reaction === 'down') t.downvotes--
-            type === 'up' ? t.upvotes++ : t.downvotes++
-            t.user_reaction = reaction
+            if (rolled.user_reaction === 'up') rolled.upvotes--
+            if (rolled.user_reaction === 'down') rolled.downvotes--
+            type === 'up' ? rolled.upvotes++ : rolled.downvotes++
+            rolled.user_reaction = type
           }
-          updated[Number(key)] = t
-        }
-      }
-      return updated
-    })
+          return rolled
+        })
+      )
+    }
   }, [])
 
   if (loading) {
     return (
       <div className="p-4 space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border h-32 animate-pulse" style={{ backgroundColor: 'var(--brand-surface)', borderColor: 'var(--brand-border)' }} />
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div
+            key={i}
+            className="rounded-lg border h-32 animate-pulse"
+            style={{ backgroundColor: 'var(--brand-surface)', borderColor: 'var(--brand-border)' }}
+          />
         ))}
+      </div>
+    )
+  }
+
+  if (threads.length === 0) {
+    return (
+      <div className="text-center py-24" style={{ color: 'var(--brand-muted)', fontFamily: 'var(--font-geist-mono)' }}>
+        <p className="text-4xl mb-3">💬</p>
+        <p className="text-sm">Belum ada thread. Jadilah yang pertama!</p>
       </div>
     )
   }
 
   return (
     <div className="pb-28 px-3 pt-3">
-      {CATEGORIES.map((cat) =>
-        cat.subcategories?.map((sub) => {
-          const thread = feed[sub.id] as Thread | undefined
-          if (!thread) return null
-          return (
-            <section key={sub.id} className="mb-2">
-              <ThreadCard thread={thread} onReact={handleReact} />
-            </section>
-          )
-        })
-      )}
+      {threads.map((thread) => (
+        <ThreadCard key={thread.id} thread={thread} onReact={handleReact} />
+      ))}
 
       {/* Floating action button */}
       {mounted && (
