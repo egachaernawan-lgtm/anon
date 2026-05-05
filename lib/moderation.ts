@@ -36,8 +36,9 @@ const SEVERE_PATTERNS: RegExp[] = [
   /\b(harus\s+)?(mati|dibasmi|dibunuh|dihapus)\b.{0,30}\b(cina|melayu|jawa|batak|kafir)\b/i,
   /\b(cina|melayu|jawa|batak|kafir)\b.{0,30}\b(mati|dibasmi|dibunuh|dihapus)\b/i,
   // Doxxing: phone number near an address keyword
-  /(\+62|08\d{8,11}).{0,80}(jl\.|jalan\s|rt\s*\d|rw\s*\d)/is,
-  /(jl\.|jalan\s|rt\s*\d|rw\s*\d).{0,80}(\+62|08\d{8,11})/is,
+  // Note: [\s\S] instead of . with /s flag — compatible with all TS targets
+  /(\+62|08\d{8,11})[\s\S]{0,80}(jl\.|jalan\s|rt\s*\d|rw\s*\d)/i,
+  /(jl\.|jalan\s|rt\s*\d|rw\s*\d)[\s\S]{0,80}(\+62|08\d{8,11})/i,
 ]
 
 // ─── Core logic ───────────────────────────────────────────────────────────────
