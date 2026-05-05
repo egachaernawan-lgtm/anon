@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { CommentItem } from './CommentItem'
 import { ReactionBar } from './ReactionBar'
 import { StoryCard } from './StoryCard'
@@ -11,7 +12,7 @@ import type { Thread, Comment } from '@/types'
 import { ArrowLeft, Lock, Trash2, Share2 } from 'lucide-react'
 import { getCategoryColor } from '@/lib/categoryColors'
 import { formatDistanceToNow } from '@/lib/time'
-import { getOrCreateUserUUID, getOwnerToken } from '@/lib/user'
+import { getOrCreateUserUUID, getOwnerToken, removeLocalThread } from '@/lib/user'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase'
 
@@ -30,6 +31,7 @@ export function ThreadDetail({ threadId }: Props) {
   const [userUuid, setUserUuid] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const storyRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const uuid = getOrCreateUserUUID()
@@ -215,8 +217,15 @@ export function ThreadDetail({ threadId }: Props) {
       body: JSON.stringify({ ownerToken, action }),
     })
     if (!res.ok) { toast.error('Gagal'); return }
-    toast.success(action === 'close' ? 'Thread ditutup' : 'Thread dihapus')
-    setThread((t) => t ? { ...t, status: action === 'close' ? 'closed' : 'removed' } : t)
+
+    if (action === 'delete') {
+      removeLocalThread(threadId)
+      toast.success('Thread dihapus')
+      router.push('/')
+    } else {
+      toast.success('Thread ditutup')
+      setThread((t) => t ? { ...t, status: 'closed' } : t)
+    }
   }
 
   const handleShare = async () => {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { getLocalThreads, updateLastChecked, type LocalThreadEntry } from '@/lib/user'
+import { getLocalThreads, updateLastChecked, removeLocalThread, type LocalThreadEntry } from '@/lib/user'
 import { formatDistanceToNow } from '@/lib/time'
 import { MessageSquare, ArrowLeft, ExternalLink } from 'lucide-react'
 
@@ -27,11 +27,22 @@ export function MyThreads() {
           .catch(() => null)
       )
     ).then((results) => {
-      const enriched = local.map((t, i) => {
-        const current = results[i]?.thread?.comment_count ?? t.lastCheckedCommentCount ?? 0
+      const enriched: ThreadWithCount[] = []
+
+      local.forEach((t, i) => {
+        const result = results[i]
+
+        // API returns 404 (null) when thread is deleted or removed — purge from localStorage
+        if (!result || !result.thread) {
+          removeLocalThread(t.threadId)
+          return
+        }
+
+        const current = result.thread.comment_count ?? t.lastCheckedCommentCount ?? 0
         const newComments = Math.max(0, current - (t.lastCheckedCommentCount ?? 0))
-        return { ...t, currentCount: current, newComments }
+        enriched.push({ ...t, currentCount: current, newComments })
       })
+
       setThreads(enriched)
       setLoading(false)
     })

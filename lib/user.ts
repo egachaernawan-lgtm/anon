@@ -69,3 +69,8 @@ export function updateLastChecked(threadId: string, count: number) {
     localStorage.setItem(LOCAL_THREADS_KEY, JSON.stringify(threads))
   }
 }
+
+export function removeLocalThread(threadId: string) {
+  const threads = getLocalThreads().filter((t) => t.threadId !== threadId)
+  localStorage.setItem(LOCAL_THREADS_KEY, JSON.stringify(threads))
+}
