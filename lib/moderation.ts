@@ -3,7 +3,7 @@ import type { ModerationResult } from '@/types'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
-const SYSTEM_PROMPT = `Kamu adalah moderator konten untuk platform diskusi anonim bernama Anon yang ditujukan untuk pengguna Indonesia berusia 16+.
+const SYSTEM_PROMPT = `Kamu adalah moderator konten untuk platform diskusi anonim bernama YAPPR yang ditujukan untuk pengguna Indonesia berusia 16+.
 
 Tugasmu adalah memeriksa konten thread atau komentar dan mengembalikan respons JSON dengan format:
 {"safe":boolean,"maskedContent":string,"warningMessage":string|null,"blocked":boolean}
@@ -18,7 +18,21 @@ Aturan moderasi:
 7. Konten dewasa ringan (18+): boleh, set safe=true
 
 Untuk warningMessage gunakan Bahasa Indonesia yang friendly.
-Kembalikan HANYA JSON, tanpa markdown, tanpa teks lain.`
+Kembalikan HANYA JSON valid, tanpa markdown, tanpa teks tambahan apapun.`
+
+/** Extract the first valid JSON object from the model's response.
+ *  Gemini sometimes wraps output in prose or code fences — this handles both. */
+function extractJSON(raw: string): ModerationResult {
+  // 1. Strip markdown code fences (```json ... ``` or ``` ... ```)
+  const stripped = raw.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim()
+
+  // 2. Find the first '{' … last '}' substring and parse that
+  const start = stripped.indexOf('{')
+  const end   = stripped.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error('No JSON object found')
+
+  return JSON.parse(stripped.slice(start, end + 1)) as ModerationResult
+}
 
 export async function moderateContent(content: string): Promise<ModerationResult> {
   try {
@@ -27,13 +41,13 @@ export async function moderateContent(content: string): Promise<ModerationResult
       systemInstruction: SYSTEM_PROMPT,
     })
 
-    const result = await model.generateContent(`Periksa konten berikut:\n\n${content}`)
+    const result = await model.generateContent(
+      `Periksa konten berikut dan kembalikan HANYA JSON:\n\n${content}`
+    )
     const text = result.response.text().trim()
-
-    // Strip markdown code fences if present
-    const clean = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()
-    return JSON.parse(clean) as ModerationResult
+    return extractJSON(text)
   } catch {
+    // Fail open — never block a post due to a moderation error
     return { safe: true, maskedContent: content, warningMessage: null, blocked: false }
   }
 }

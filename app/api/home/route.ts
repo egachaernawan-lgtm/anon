@@ -1,82 +1,31 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase-server'
-import { CATEGORIES } from '@/lib/categories'
+
+// Popularity score weights
+const W_UPVOTES  = 2
+const W_COMMENTS = 3
+const W_VIEWS    = 1
 
 export async function GET() {
   const supabase = createServiceClient()
 
-  const { data: cached } = await supabase
-    .from('home_feed_cache')
-    .select('subcategory_id, thread_id, updated_at')
+  // Fetch all active threads (no subcategory filter — show everything)
+  const { data: threads, error } = await supabase
+    .from('threads')
+    .select('*, subcategory:subcategories(id, name, slug, category:categories(name, slug, icon))')
+    .neq('status', 'removed')
+    .order('created_at', { ascending: false })
+    .limit(50)
 
-  const cacheMap = new Map(cached?.map((c) => [c.subcategory_id, c]) ?? [])
-  const threadIds = (cached ?? []).map((c) => c.thread_id).filter(Boolean)
+  if (error) return NextResponse.json({ threads: [] })
 
-  let cachedThreads: Record<string, unknown>[] = []
-  if (threadIds.length > 0) {
-    const { data } = await supabase
-      .from('threads')
-      .select('*, subcategory:subcategories(id, name, slug, category:categories(name, slug, icon))')
-      .in('id', threadIds)
-      .neq('status', 'removed')
-    cachedThreads = data ?? []
-  }
+  // Sort by popularity score: upvotes*2 + comments*3 + views*1
+  const ranked = (threads ?? [])
+    .map((t) => ({
+      ...t,
+      _score: (t.upvotes ?? 0) * W_UPVOTES + (t.comment_count ?? 0) * W_COMMENTS + (t.view_count ?? 0) * W_VIEWS,
+    }))
+    .sort((a, b) => b._score - a._score)
 
-  // For subcategories without cache:
-  // 1. Try most active thread in last 24h first
-  // 2. Fall back to most recent thread ever (so the homepage is never empty)
-  const allSubcategoryIds = CATEGORIES.flatMap((c) => c.subcategories?.map((s) => s.id) ?? [])
-  const uncachedIds = allSubcategoryIds.filter((id) => !cacheMap.has(id))
-
-  const fallbackResults: Record<string, unknown>[] = []
-  if (uncachedIds.length > 0) {
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-
-    // Step 1: most active in last 24h
-    const { data: recentData } = await supabase
-      .from('threads')
-      .select('*, subcategory:subcategories(id, name, slug, category:categories(name, slug, icon))')
-      .in('subcategory_id', uncachedIds)
-      .neq('status', 'removed')
-      .gte('created_at', oneDayAgo)
-      .order('comment_count', { ascending: false })
-
-    const coveredIds = new Set<number>()
-    for (const thread of recentData ?? []) {
-      if (!coveredIds.has(thread.subcategory_id)) {
-        coveredIds.add(thread.subcategory_id)
-        fallbackResults.push(thread)
-      }
-    }
-
-    // Step 2: for subcategories still without a thread, grab the most recent one ever
-    const stillUncovered = uncachedIds.filter((id) => !coveredIds.has(id))
-    if (stillUncovered.length > 0) {
-      const { data: oldData } = await supabase
-        .from('threads')
-        .select('*, subcategory:subcategories(id, name, slug, category:categories(name, slug, icon))')
-        .in('subcategory_id', stillUncovered)
-        .neq('status', 'removed')
-        .order('created_at', { ascending: false })
-
-      const seen = new Set<number>()
-      for (const thread of oldData ?? []) {
-        if (!seen.has(thread.subcategory_id)) {
-          seen.add(thread.subcategory_id)
-          fallbackResults.push(thread)
-        }
-      }
-    }
-  }
-
-  const allThreads = [...cachedThreads, ...fallbackResults]
-  const bySubcategory = new Map<number, unknown>()
-  for (const thread of allThreads) {
-    const t = thread as { subcategory_id: number }
-    if (!bySubcategory.has(t.subcategory_id)) {
-      bySubcategory.set(t.subcategory_id, thread)
-    }
-  }
-
-  return NextResponse.json({ feed: Object.fromEntries(bySubcategory) })
+  return NextResponse.json({ threads: ranked })
 }

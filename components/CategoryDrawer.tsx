@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -15,6 +15,7 @@ export function CategoryDrawer() {
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
   const { resolvedTheme, setTheme } = useTheme()
+  const touchStartX = useRef(0)
 
   useEffect(() => setMounted(true), [])
 
@@ -24,7 +25,15 @@ export function CategoryDrawer() {
         <Menu className="w-5 h-5" />
       </SheetTrigger>
 
-      <SheetContent side="left" className="w-72 p-0 border-r brand-bg brand-border">
+      <SheetContent
+        side="left"
+        className="w-72 p-0 border-r brand-bg brand-border"
+        onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
+        onTouchEnd={(e) => {
+          const delta = touchStartX.current - e.changedTouches[0].clientX
+          if (delta > 48) setOpen(false)
+        }}
+      >
         <SheetHeader className="px-4 pt-5 pb-3 border-b brand-border">
           <SheetTitle
             className="brand-text font-bold text-lg tracking-widest"
