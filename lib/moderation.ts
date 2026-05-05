@@ -1,7 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { ModerationResult } from '@/types'
 
-const client = new Anthropic()   // reads ANTHROPIC_API_KEY from env
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 const SYSTEM_PROMPT = `Kamu adalah moderator konten untuk platform diskusi anonim bernama YAPPR yang ditujukan untuk pengguna Indonesia berusia 16+.
 
@@ -18,22 +18,36 @@ Aturan moderasi:
 7. Konten dewasa ringan (18+): boleh, set safe=true
 
 Untuk warningMessage gunakan Bahasa Indonesia yang friendly.
-Kembalikan HANYA JSON, tanpa markdown, tanpa teks lain.`
+Kembalikan HANYA JSON valid, tanpa markdown, tanpa teks tambahan apapun.`
+
+/** Extract the first valid JSON object from the model's response.
+ *  Gemini sometimes wraps output in prose or code fences — this handles both. */
+function extractJSON(raw: string): ModerationResult {
+  // 1. Strip markdown code fences (```json ... ``` or ``` ... ```)
+  const stripped = raw.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim()
+
+  // 2. Find the first '{' … last '}' substring and parse that
+  const start = stripped.indexOf('{')
+  const end   = stripped.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error('No JSON object found')
+
+  return JSON.parse(stripped.slice(start, end + 1)) as ModerationResult
+}
 
 export async function moderateContent(content: string): Promise<ModerationResult> {
   try {
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 256,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Periksa konten berikut:\n\n${content}` }],
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      systemInstruction: SYSTEM_PROMPT,
     })
 
-    const raw = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
-    const clean = raw.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()
-    return JSON.parse(clean) as ModerationResult
+    const result = await model.generateContent(
+      `Periksa konten berikut dan kembalikan HANYA JSON:\n\n${content}`
+    )
+    const text = result.response.text().trim()
+    return extractJSON(text)
   } catch {
-    // Fail open so a missing key never blocks posting
+    // Fail open — never block a post due to a moderation error
     return { safe: true, maskedContent: content, warningMessage: null, blocked: false }
   }
 }
